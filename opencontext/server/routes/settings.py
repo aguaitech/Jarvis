@@ -32,13 +32,13 @@ _config_lock = threading.Lock()
 class ModelSettingsVO(BaseModel):
     """Model settings with optional separate embedding configuration"""
 
-    modelPlatform: str
+    modelPlatform: str = "ollama"
     modelId: str
     baseUrl: str
-    apiKey: str
+    apiKey: str | None = ""
     embeddingModelId: str
     embeddingBaseUrl: str | None = None
-    embeddingApiKey: str | None = None
+    embeddingApiKey: str | None = ""
     embeddingModelPlatform: str | None = None
 
 
@@ -61,7 +61,12 @@ def _build_llm_config(
     base_url: str, api_key: str, model: str, provider: str, llm_type: LLMType, **kwargs
 ) -> dict:
     """Build LLM config dict"""
-    config = {"base_url": base_url, "api_key": api_key, "model": model, "provider": provider}
+    config = {
+        "base_url": base_url,
+        "api_key": api_key or "",
+        "model": model,
+        "provider": provider or "ollama",
+    }
     if llm_type == LLMType.EMBEDDING:
         config["output_dim"] = kwargs.get("output_dim", 2048)
     return config
@@ -82,7 +87,7 @@ async def get_model_settings(_auth: str = auth_dependency):
         emb_cfg = config.get("embedding_model", {})
 
         settings = ModelSettingsVO(
-            modelPlatform=vlm_cfg.get("provider", ""),
+            modelPlatform=vlm_cfg.get("provider", "") or "ollama",
             modelId=vlm_cfg.get("model", ""),
             baseUrl=vlm_cfg.get("base_url", ""),
             apiKey=vlm_cfg.get("api_key", ""),
@@ -107,20 +112,15 @@ async def update_model_settings(request: UpdateModelSettingsRequest, _auth: str 
             cfg = request.config
 
             # Use API keys directly from frontend
-            vlm_key = cfg.apiKey
+            vlm_key = cfg.apiKey or ""
             emb_key = cfg.embeddingApiKey or vlm_key
 
             # Resolve embedding URL and provider
             emb_url = cfg.embeddingBaseUrl or cfg.baseUrl
-            emb_provider = cfg.embeddingModelPlatform or cfg.modelPlatform
+            emb_provider = cfg.embeddingModelPlatform or cfg.modelPlatform or "ollama"
+            model_provider = cfg.modelPlatform or "ollama"
 
             # Validation
-            if not vlm_key:
-                return convert_resp(code=400, status=400, message="VLM API key cannot be empty")
-            if not emb_key:
-                return convert_resp(
-                    code=400, status=400, message="Embedding API key cannot be empty"
-                )
             if not cfg.modelId:
                 return convert_resp(code=400, status=400, message="VLM model ID cannot be empty")
             if not cfg.embeddingModelId:
@@ -130,7 +130,7 @@ async def update_model_settings(request: UpdateModelSettingsRequest, _auth: str 
 
             # Validate VLM
             vlm_config = _build_llm_config(
-                cfg.baseUrl, vlm_key, cfg.modelId, cfg.modelPlatform, LLMType.CHAT
+                cfg.baseUrl, vlm_key, cfg.modelId, model_provider, LLMType.CHAT
             )
             vlm_valid, vlm_msg = LLMClient(llm_type=LLMType.CHAT, config=vlm_config).validate()
             if not vlm_valid:
@@ -189,18 +189,15 @@ async def validate_llm_config(request: UpdateModelSettingsRequest, _auth: str = 
         cfg = request.config
 
         # Use API keys directly from frontend
-        vlm_key = cfg.apiKey
+        vlm_key = cfg.apiKey or ""
         emb_key = cfg.embeddingApiKey or vlm_key
 
         # Resolve embedding URL and provider
         emb_url = cfg.embeddingBaseUrl or cfg.baseUrl
-        emb_provider = cfg.embeddingModelPlatform or cfg.modelPlatform
+        emb_provider = cfg.embeddingModelPlatform or cfg.modelPlatform or "ollama"
+        model_provider = cfg.modelPlatform or "ollama"
 
         # Validation
-        if not vlm_key:
-            return convert_resp(code=400, status=400, message="VLM API key cannot be empty")
-        if not emb_key:
-            return convert_resp(code=400, status=400, message="Embedding API key cannot be empty")
         if not cfg.modelId:
             return convert_resp(code=400, status=400, message="VLM model ID cannot be empty")
         if not cfg.embeddingModelId:
@@ -210,7 +207,7 @@ async def validate_llm_config(request: UpdateModelSettingsRequest, _auth: str = 
 
         # Build configs for validation (without saving)
         vlm_config = _build_llm_config(
-            cfg.baseUrl, vlm_key, cfg.modelId, cfg.modelPlatform, LLMType.CHAT
+            cfg.baseUrl, vlm_key, cfg.modelId, model_provider, LLMType.CHAT
         )
         emb_config = _build_llm_config(
             emb_url, emb_key, cfg.embeddingModelId, emb_provider, LLMType.EMBEDDING

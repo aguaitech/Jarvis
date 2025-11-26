@@ -16,16 +16,16 @@ show_help() {
     echo ""
     echo "命令:"
     echo "  (无命令)      执行完整的后端和前端构建，并启动开发服务器。"
-    echo "  backend         仅构建和准备 MineContext 后端。"
+    echo "  backend         仅构建和准备 Jarvis 后端。"
     echo "  frontend        仅安装前端依赖并准备前端环境 (包括 Python 部分)。"
     echo "  frontend-py     仅构建前端所需的 Python 可执行文件。"
-    echo "  web serve       启动 MineContext 的 Web 服务器。"
+    echo "  web serve       启动 Jarvis 的 Web 服务器。"
     echo "  -h, --help      显示此帮助信息。"
 }
 
-# 构建后端 (MineContext)
+# 构建后端 (Jarvis)
 build_backend() {
-    echo "--- ⚙️  构建后端 (MineContext) ---"
+    echo "--- ⚙️  构建后端 (Jarvis) ---"
 
     # 项目根目录是 SCRIPT_DIR 的上一级
     PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
@@ -48,7 +48,7 @@ build_backend() {
     echo "🔌 激活 Python 虚拟环境..."
     source .venv/bin/activate
 
-    echo "🛠️  执行 MineContext 构建脚本..."
+    echo "🛠️  执行 Jarvis 构建脚本..."
     ./build.sh
 
     echo "✅ 后端构建完成。"
@@ -217,10 +217,10 @@ setup_frontend() {
 
 
 
-# 启动 MineContext web 服务器
+# 启动 Jarvis web 服务器
 start_web_serve() {
-    echo "--- 🌐 启动 MineContext Web 服务器 ---"
-    echo "📂 切换到 MineContext 目录: $CONTEXT_LAB_DIR"
+    echo "--- 🌐 启动 Jarvis Web 服务器 ---"
+    echo "📂 切换到 Jarvis 目录: $CONTEXT_LAB_DIR"
     cd "$CONTEXT_LAB_DIR"
 
     echo "激活虚拟环境..."

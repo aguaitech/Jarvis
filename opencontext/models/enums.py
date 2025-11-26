@@ -204,7 +204,7 @@ ContextDescriptions = {
             "Has reusable educational and reference value",
         ],
         "examples": [
-            "MineContext architecture: hybrid storage supporting local privacy and cloud inference",
+            "Jarvis architecture: hybrid storage supporting local privacy and cloud inference",
             "React Hooks principle: enables state and lifecycle features in functional components",
             "Microservices patterns: service decomposition, API gateway, service discovery, circuit breaker",
         ],

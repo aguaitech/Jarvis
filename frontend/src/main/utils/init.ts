@@ -29,14 +29,14 @@ function getDataDirFromRegistry() {
 
   try {
     // Read data directory from Windows Registry with timeout protection
-    const result = execSync('reg query "HKCU\\Software\\MineContext" /v DataDirectory', {
+    const result = execSync('reg query "HKCU\\Software\\Jarvis" /v DataDirectory', {
       encoding: 'utf8',
       timeout: 3000, // 3 second timeout to prevent hanging
       windowsHide: true
     })
 
     // Parse the registry output
-    // Format: "DataDirectory    REG_SZ    C:\Users\...\AppData\Local\MineContext"
+    // Format: "DataDirectory    REG_SZ    C:\Users\...\AppData\Local\Jarvis"
     const match = result.match(/DataDirectory\s+REG_SZ\s+(.+)/)
     if (match && match[1]) {
       const dataDir = match[1].trim()
@@ -75,7 +75,7 @@ export function initAppDataDir() {
     }
 
     // If no registry setting, use the default AppData location
-    // (e.g., %LOCALAPPDATA%\MineContext)
+    // (e.g., %LOCALAPPDATA%\Jarvis)
     // This is the correct fallback behavior
   }
 }

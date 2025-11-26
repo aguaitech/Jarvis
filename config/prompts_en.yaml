@@ -570,7 +570,7 @@ processing:
           ## Field Specifications
           - **title**: Generate appropriate title based on context_type:
             * **activity_context**: Behavior-oriented title, including subject and action (e.g., "current_user viewing memory repository configuration")
-            * **semantic_context**: Concise expression of core concepts or knowledge points, only including knowledge itself (e.g., "MineContext Technical Architecture", "React Hooks Usage Principles")
+            * **semantic_context**: Concise expression of core concepts or knowledge points, only including knowledge itself (e.g., "Jarvis Technical Architecture", "React Hooks Usage Principles")
             * **procedural_context**: Task description of user operation flow (e.g., "Steps for merging code using Git", "Operation flow for configuring Docker containers")
             * **state_context**: State description (e.g., "Project Progress: Frontend development 80% complete", "System Performance: CPU usage 75%")
             * **intent_context**: Plan or goal expression (e.g., "Next week product release preparation items", "Q4 quarterly technical planning")
@@ -584,7 +584,7 @@ processing:
             * **semantic_context**: Extract core knowledge points, concept definitions, technical principles. Only record knowledge itself, do not include acquisition process.
               - **Description style**: Subject is technology/concept/system, use explanatory verbs (adopt, support, include, implement, etc.)
               - **Content focus**: What knowledge is, how architecture works, why principles, technical characteristics
-              - **Example**: "MineContext adopts hybrid storage architecture, supports privacy local storage and cloud inference, based on Python+FastAPI+ChromaDB technology stack, core modules include..."
+              - **Example**: "Jarvis adopts hybrid storage architecture, supports privacy local storage and cloud inference, based on Python+FastAPI+ChromaDB technology stack, core modules include..."
               - **Prohibit**: Avoid user behavior descriptions such as "user learned", "current_user viewed"
 
             * **procedural_context**: Record operation step sequences for users to complete specific tasks. Learn operation patterns based on screenshot time sequence.
@@ -769,7 +769,7 @@ merging:
 
       - **title**: Generate appropriate title based on context_type:
         * **activity_context**: Action-oriented title with subject and action (e.g., "current_user reviewing memory repository configuration")
-        * **semantic_context**: Concise expression of core concepts or knowledge (e.g., "MineContext Technical Architecture")
+        * **semantic_context**: Concise expression of core concepts or knowledge (e.g., "Jarvis Technical Architecture")
         * **procedural_context**: Task description of operation process (e.g., "Steps for Code Merging Using Git")
         * **state_context**: State description (e.g., "Project Progress: Frontend Development 80% Complete")
         * **intent_context**: Plan or goal statement (e.g., "Next Week Product Launch Preparation")
@@ -795,7 +795,7 @@ merging:
 
       - **entities**: List of key entities identified from merged content (**Required, cannot be empty array**):
         * **Entity types that must be extracted**:
-          - Project names (e.g., MineContext, WebKnowledge, React, etc.)
+          - Project names (e.g., Jarvis, WebKnowledge, React, etc.)
           - Product/tool names (e.g., Electron, Docker, IDE, Terminal, Xcode, etc.)
           - People (current_user or specific names)
           - Organizations/platforms (e.g., Apple, GitHub, Feishu, etc.)
@@ -1556,9 +1556,9 @@ document_processing:
       "This image is a webpage screenshot with a logo in the top left corner and a search box in the top right. The main content section in the middle displays product information, with buttons in the top right corner."
 
       **Example (Correct)**:
-      "MineContext
+      "Jarvis
 
-      MineContext is a proactive context-aware AI partner. It leverages screenshots and content understanding to gain insights into users' digital world context.
+      Jarvis is a proactive context-aware AI partner. It leverages screenshots and content understanding to gain insights into users' digital world context.
 
       Product Features:
       - Easy Collection: Effortlessly process massive context information
@@ -1634,29 +1634,29 @@ document_processing:
       **Example 2 - Paragraph Splitting**:
       Original:
       ```
-      MineContext Technical Architecture
+      Jarvis Technical Architecture
 
-      MineContext adopts a hybrid storage architecture, supporting privacy local storage and cloud inference. Core modules include context capture, processing, storage, retrieval, and consumption.
+      Jarvis adopts a hybrid storage architecture, supporting privacy local storage and cloud inference. Core modules include context capture, processing, storage, retrieval, and consumption.
 
       The system is based on Python+FastAPI+ChromaDB tech stack, providing complete lifecycle management.
       ```
 
       ❌ Incorrect split (topic lost):
       ```
-      Chunk1: "MineContext Technical Architecture\n\nMineContext adopts hybrid storage architecture..."
+      Chunk1: "Jarvis Technical Architecture\n\nJarvis adopts hybrid storage architecture..."
       Chunk2: "The system is based on Python+FastAPI+ChromaDB..."  # Which system?
       ```
 
       ✅ Correct approach (keep complete or add context):
       Option A - Keep complete:
       ```
-      Chunk1: "MineContext Technical Architecture\n\nMineContext adopts hybrid storage...Core modules include...\n\nThe system is based on Python+FastAPI+ChromaDB..."
+      Chunk1: "Jarvis Technical Architecture\n\nJarvis adopts hybrid storage...Core modules include...\n\nThe system is based on Python+FastAPI+ChromaDB..."
       ```
 
       Option B - Add context (only when content is too long):
       ```
-      Chunk1: "MineContext Technical Architecture\n\nMineContext adopts hybrid storage...Core modules include..."
-      Chunk2: "MineContext Technical Architecture (continued)\n\nMineContext system is based on Python+FastAPI+ChromaDB..."
+      Chunk1: "Jarvis Technical Architecture\n\nJarvis adopts hybrid storage...Core modules include..."
+      Chunk2: "Jarvis Technical Architecture (continued)\n\nJarvis system is based on Python+FastAPI+ChromaDB..."
       ```
 
       ## Output Requirements
@@ -1746,12 +1746,12 @@ document_processing:
 
       1. **Identify document theme**:
          - Extract theme/product name/title from document beginning
-         - E.g.: "MineContext", "Technical Documentation", "User Manual"
+         - E.g.: "Jarvis", "Technical Documentation", "User Manual"
 
       2. **Supplement subject/topic**:
          - If chunk lacks subject, add document title prefix
-         - E.g.: "Product Features:\n- Feature1..." → "MineContext Product Features:\n- Feature1..."
-         - E.g.: "Technical Architecture\nSystem adopts..." → "MineContext Technical Architecture\nSystem adopts..."
+         - E.g.: "Product Features:\n- Feature1..." → "Jarvis Product Features:\n- Feature1..."
+         - E.g.: "Technical Architecture\nSystem adopts..." → "Jarvis Technical Architecture\nSystem adopts..."
 
       3. **Supplement chapter title**:
          - If chunk is part of a chapter, keep chapter title

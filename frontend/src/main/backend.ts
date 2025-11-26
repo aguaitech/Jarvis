@@ -8,7 +8,13 @@ import path from 'path'
 import { spawn } from 'child_process'
 import http from 'http'
 import net from 'net'
-import { isPackaged, actuallyDev, serverRunInFrontend, getResourcesPath } from './utils/env'
+import {
+  isPackaged,
+  actuallyDev,
+  serverRunInFrontend,
+  getResourcesPath,
+  manualBackendPort
+} from './utils/env'
 import { IpcChannel } from '@shared/IpcChannel'
 import { is } from '@electron-toolkit/utils'
 import { IpcServerPushChannel } from '@shared/ipc-server-push-channel'
@@ -315,7 +321,13 @@ function killProcessByPort(port: number) {
 // Ensure backend is running (start if not running)
 export async function ensureBackendRunning(mainWindow: BrowserWindow) {
   if (actuallyDev && !serverRunInFrontend) {
-    safeLog.log('Development mode: Backend should be running separately')
+    backendPort = manualBackendPort
+    safeLog.log(`Development mode: Using external backend on port ${backendPort}`)
+    const healthy = await isBackendHealthy(mainWindow)
+    setBackendStatus(healthy ? 'running' : 'error')
+    if (!healthy) {
+      throw new Error(`External backend on port ${backendPort} is not reachable/healthy`)
+    }
     return
   }
 
@@ -347,6 +359,7 @@ export async function ensureBackendRunning(mainWindow: BrowserWindow) {
 async function startBackendServer(mainWindow: BrowserWindow) {
   if (actuallyDev && !serverRunInFrontend) {
     safeLog.log('Development mode: Backend should be running separately')
+    backendPort = manualBackendPort
     setBackendStatus('running') // In development mode, assume the backend is already running
     return Promise.resolve()
   }

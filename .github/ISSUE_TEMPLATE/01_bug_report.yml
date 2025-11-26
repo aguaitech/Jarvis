@@ -43,8 +43,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: "🛠️ MineContext Version"
-      description: "What version of MineContext are you using?"
+      label: "🛠️ Jarvis Version"
+      description: "What version of Jarvis are you using?"
       placeholder: "e.g., 0.1.0"
     validations:
       required: true

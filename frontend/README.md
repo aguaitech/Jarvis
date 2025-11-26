@@ -1,4 +1,4 @@
-# MineContext
+# Jarvis
 
 ## Project Setup
 
@@ -35,9 +35,9 @@ pnpm dev
 # For macOS
 pnpm build:mac
 # Data Path
-# ～/Library/Application\ Support/MineContext
+# ～/Library/Application\ Support/Jarvis
 ```
 
 ### Data Path
 
-～/Library/Application\ Support/MineContext
+～/Library/Application\ Support/Jarvis

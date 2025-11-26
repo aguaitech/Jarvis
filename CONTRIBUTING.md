@@ -1,6 +1,6 @@
-# Contributing to MineContext
+# Contributing to Jarvis
 
-Thank you for your interest in contributing to MineContext! We welcome contributions from the community.
+Thank you for your interest in contributing to Jarvis! We welcome contributions from the community.
 
 ## Getting Started
 
@@ -9,8 +9,8 @@ Thank you for your interest in contributing to MineContext! We welcome contribut
 1. **Fork and clone the repository**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/MineContext.git
-   cd MineContext
+   git clone https://github.com/YOUR_USERNAME/Jarvis.git
+   cd Jarvis
    ```
 
 2. **Set up your environment**
@@ -78,15 +78,32 @@ Thank you for your interest in contributing to MineContext! We welcome contribut
    - `--host`: Host address (overrides config file)
    - `--port`: Port number (overrides config file)
 
+### Electron Setup
+
+```bash
+cd frontend
+pnpm install
+./build-python.sh
+pnpm dev
+```
+
+### Packup
+
+```bash
+./build.sh
+cd dist
+./main start
+```
+
 ## How to Contribute
 
 ### Reporting Issues
 
-Found a bug or have a feature request? [Create an issue](https://github.com/volcengine/MineContext/issues) with:
+Found a bug or have a feature request? Create an issue with:
 
 - Clear description of the problem or feature
 - Steps to reproduce (for bugs)
-- Your environment (OS, Python version, MineContext version)
+- Your environment (OS, Python version, Jarvis version)
 
 ### Branch Naming Convention
 
@@ -375,12 +392,6 @@ We especially welcome contributions in these areas:
 - **P4-P5**: Mobile screenshot monitoring, smart device sync
 
 See the [Context Sources](README.md#-context-source) section for more details.
-
-## Community
-
-- **Issues**: [GitHub Issues](https://github.com/volcengine/MineContext/issues)
-- **WeChat/Lark**: [Join our group](https://bytedance.larkoffice.com/wiki/Hg6VwrxnTiXtWUkgHexcFTqrnpg)
-- **Discord**: [Join here](https://discord.gg/tGj7RQ3nUR)
 
 ## License
 

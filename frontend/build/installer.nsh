@@ -1,4 +1,4 @@
-; Custom NSIS script for MineContext installer
+; Custom NSIS script for Jarvis installer
 ; Add data directory selection page
 
 !include "LogicLib.nsh"
@@ -13,16 +13,16 @@ Var DataDir
 ; Initialize variables when installer starts
 !macro customInit
   ; Try to read existing installation directory from registry
-  ReadRegStr $0 HKCU "Software\MineContext" "InstallDirectory"
+  ReadRegStr $0 HKCU "Software\Jarvis" "InstallDirectory"
   ${If} $0 != ""
     StrCpy $INSTDIR $0
   ${EndIf}
 
   ; Try to read existing data directory from registry
-  ReadRegStr $DataDir HKCU "Software\MineContext" "DataDirectory"
+  ReadRegStr $DataDir HKCU "Software\Jarvis" "DataDirectory"
   ${If} $DataDir == ""
-    ; Set default to AppData\Local\MineContext
-    StrCpy $DataDir "$LOCALAPPDATA\MineContext"
+    ; Set default to AppData\Local\Jarvis
+    StrCpy $DataDir "$LOCALAPPDATA\Jarvis"
   ${EndIf}
 !macroend
 
@@ -42,7 +42,7 @@ Function DataDirectoryPage
   ${EndIf}
 
   ; Create label with description
-  ${NSD_CreateLabel} 0 0 100% 24u "Select where MineContext will store application data (databases, files, cache). The directory requires write permissions."
+  ${NSD_CreateLabel} 0 0 100% 24u "Select where Jarvis will store application data (databases, files, cache). The directory requires write permissions."
   Pop $DataDirLabel
 
   ; Create text input showing current data directory
@@ -99,7 +99,7 @@ Function DataDirectoryLeave
   Delete "$DataDir\.write_test"
 
   ; Save the data directory to registry
-  WriteRegStr HKCU "Software\MineContext" "DataDirectory" "$DataDir"
+  WriteRegStr HKCU "Software\Jarvis" "DataDirectory" "$DataDir"
 FunctionEnd
 
 !endif ; BUILD_UNINSTALLER

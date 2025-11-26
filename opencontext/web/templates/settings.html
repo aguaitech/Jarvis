@@ -44,23 +44,20 @@
                         <div class="mb-3">
                             <label for="modelPlatform" class="form-label">模型平台</label>
                             <select class="form-select" id="modelPlatform" required>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="doubao">豆包</option>
-                                <option value="qwen">通义千问</option>
+                                <option value="ollama">Ollama（本地）</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="modelId" class="form-label">模型 ID</label>
-                            <input type="text" class="form-control" id="modelId" placeholder="例如: gpt-5" required>
+                            <input type="text" class="form-control" id="modelId" placeholder="例如: llama3.1" required>
                         </div>
                         <div class="mb-3">
                             <label for="baseUrl" class="form-label">Base URL</label>
-                            <input type="text" class="form-control" id="baseUrl" placeholder="例如: https://api.openai.com/v1" required>
+                            <input type="text" class="form-control" id="baseUrl" placeholder="例如: http://localhost:11434/v1" required>
                         </div>
                         <div class="mb-3">
                             <label for="apiKey" class="form-label">API Key</label>
-                            <input type="password" class="form-control" id="apiKey" required>
+                            <input type="password" class="form-control" id="apiKey">
                         </div>
 
                         <h4 class="mt-4">Embedding 模型配置</h4>
@@ -76,13 +73,12 @@
                             <div class="mb-3">
                                 <label for="embeddingModelPlatform" class="form-label">Embedding 平台</label>
                                 <select class="form-select" id="embeddingModelPlatform">
-                                    <option value="openai">OpenAI</option>
-                                    <option value="doubao">豆包</option>
+                                    <option value="ollama">Ollama（本地）</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="embeddingBaseUrl" class="form-label">Embedding Base URL</label>
-                                <input type="text" class="form-control" id="embeddingBaseUrl" placeholder="例如: https://api.openai.com/v1">
+                                <input type="text" class="form-control" id="embeddingBaseUrl" placeholder="例如: http://localhost:11434/v1">
                             </div>
                             <div class="mb-3">
                                 <label for="embeddingApiKey" class="form-label">Embedding API Key</label>

@@ -7,7 +7,9 @@ import path from 'path'
 
 export const isPackaged = app.isPackaged
 export const actuallyDev = isDev && !isPackaged
-export const serverRunInFrontend = true // true means the python server is packaged into the frontend and can be started and debugged like in a real environment
+// true means the python server is packaged into the frontend; can be disabled to connect to a manually started backend
+export const serverRunInFrontend = process.env.SERVER_RUN_IN_FRONTEND !== 'false'
+export const manualBackendPort = parseInt(process.env.BACKEND_PORT || '1733', 10)
 
 // Dynamically get the resources path
 export function getResourcesPath(): string {
@@ -17,7 +19,7 @@ export function getResourcesPath(): string {
       return path.join(__dirname, '..', '..')
     }
     // Development environment: start the packaged server from the backend
-    return path.join(__dirname, '..', '..', '..', 'MineContext')
+    return path.join(__dirname, '..', '..', '..', 'Jarvis')
 
     // TODO: Development environment: do not package the python server, connect directly for debugging, not implemented
   } else {

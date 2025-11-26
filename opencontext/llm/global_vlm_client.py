@@ -91,6 +91,18 @@ class GlobalVLMClient:
     def is_initialized(self) -> bool:
         return self._vlm_client is not None
 
+    def _ensure_client(self):
+        """
+        Ensure VLM client is initialized before use.
+        Raises a clear error if configuration is missing.
+        """
+        if self._vlm_client is None:
+            self._auto_initialize()
+        if self._vlm_client is None:
+            raise RuntimeError(
+                "VLM client is not configured. Please set model settings (e.g., Ollama base_url and model) and retry."
+            )
+
     def reinitialize(self):
         """
         Thread-safe reinitialization of VLM client
@@ -114,6 +126,7 @@ class GlobalVLMClient:
     def generate_with_messages(
         self, messages: list, enable_executor: bool = True, max_calls: int = 5, **kwargs
     ):
+        self._ensure_client()
         response = self._vlm_client.generate_with_messages(messages, **kwargs)
         call_count = 0
         while enable_executor:
@@ -176,6 +189,7 @@ class GlobalVLMClient:
     async def generate_with_messages_async(
         self, messages: list, enable_executor: bool = True, max_calls: int = 5, **kwargs
     ):
+        self._ensure_client()
         response = await self._vlm_client.generate_with_messages_async(messages, **kwargs)
         call_count = 0
         while enable_executor:
@@ -243,6 +257,7 @@ class GlobalVLMClient:
         Returns:
             Raw LLM response object, including possible tool_calls
         """
+        self._ensure_client()
         response = await self._vlm_client.generate_with_messages_async(
             messages, tools=tools, **kwargs
         )
@@ -252,6 +267,7 @@ class GlobalVLMClient:
         """
         Agent-specific streaming generation method
         """
+        self._ensure_client()
         async for chunk in self._vlm_client._openai_chat_completion_stream_async(
             messages, tools=tools, **kwargs
         ):

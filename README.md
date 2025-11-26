@@ -1,38 +1,23 @@
 <div align="center">
 
-<picture>
-  <img alt="MineContext" src="src/MineContext-Banner.svg" width="100%" height="auto">
-</picture>
-
-### MineContext: Create with Context, Clarity from Chaos
+### Jarvis: Create with Context, Clarity from Chaos
 
 An open-source, proactive context-aware AI partner, dedicated to bringing clarity and efficiency to your work, study and creation.
 
 [中文](README_zh.md) / English
 
-<a href="https://bytedance.larkoffice.com/wiki/Hn6ewRnAwiSro7kkH6Sc1DMFnng">Community Best Practice</a> · <a href="https://github.com/volcengine/MineContext/issues">Report Issues</a> · <a href="https://bytedance.larkoffice.com/share/base/form/shrcnPAjJtlufuhBZGegll41NOh">Feedback</a>
-
 [![][release-shield]][release-link]
 [![][github-stars-shield]][github-stars-link]
 [![][github-issues-shield]][github-issues-shield-link]
 [![][github-contributors-shield]][github-contributors-link]
-[![][license-shield]][license-shield-link]  
+[![][license-shield]][license-shield-link]
 [![][last-commit-shield]][last-commit-shield-link]
-[![][wechat-shield]][wechat-shield-link]
-
-<a href="https://trendshift.io/repositories/15157" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15157" alt="volcengine%2FMineContext | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
-👋 Join our [WeChat / Lark / Red Note Group](https://bytedance.larkoffice.com/wiki/Hg6VwrxnTiXtWUkgHexcFTqrnpg)
-
-🌍 Join our [Discord Group](https://discord.gg/tGj7RQ3nUR)
-
-<a href="https://github.com/volcengine/MineContext/releases/download/0.1.5/MineContext-0.1.5.dmg">🖥️ Download for Mac</a> · <a href="https://github.com/volcengine/MineContext/releases/download/0.1.5/MineContext-0.1.5-setup.exe">💻 Download for Windows</a>
 
 </div>
 
 Table of Contents
 
-- [👋🏻 What is MineContext](#-what-is-minecontext)
+- [👋🏻 What is Jarvis](#-what-is-jarvis)
 - [🚀 Key Features](#-key-features)
 - [🔏 Privacy Protection](#-privacy-protection)
   - [Local-First](#local-first)
@@ -63,24 +48,22 @@ Table of Contents
 - [🎯 Target User](#-target-user)
 - [🔌 Context-Source](#-context-source)
 - [🆚 Comparison with Familiar Application](#-comparison-with-familiar-application)
-  - [MineContext vs ChatGPT Pulse](#minecontext-vs-chatgpt-pulse)
-  - [MineContext vs Dayflow](#minecontext-vs-dayflow)
-- [👥 Community](#-community)
-  - [Community and Support](#community-and-support)
+  - [Jarvis vs ChatGPT Pulse](#jarvis-vs-chatgpt-pulse)
+  - [Jarvis vs Dayflow](#jarvis-vs-dayflow)
 - [Star History](#star-history)
 - [📃 License](#-license)
 
 <br>
 
-# 👋🏻 What is MineContext
+# 👋🏻 What is Jarvis
 
-MineContext is a proactive context-aware AI partner. By utilizing screenshots and content comprehension (with future support for multi-source multimodal information including documents, images, videos, code, and external application data), it can see and understand the user's digital world context. Based on an underlying contextual engineering framework, it actively delivers high-quality information such as insights, daily/weekly summaries, to-do lists, and activity records.
+Jarvis is a proactive context-aware AI partner. By utilizing screenshots and content comprehension (with future support for multi-source multimodal information including documents, images, videos, code, and external application data), it can see and understand the user's digital world context. Based on an underlying contextual engineering framework, it actively delivers high-quality information such as insights, daily/weekly summaries, to-do lists, and activity records.
 
 ![feature.gif](src/feature.gif)
 
 # 🚀 Key Features
 
-MineContext focuses on four key features: effortless collection, intelligent resurfacing, proactive delivery, and a context engineering architecture.
+Jarvis focuses on four key features: effortless collection, intelligent resurfacing, proactive delivery, and a context engineering architecture.
 
 1. 📥 Effortless Collection
    Capable of gathering and processing massive amounts of context. Designed storage management enables extensive collection without adding mental burden.
@@ -95,47 +78,37 @@ MineContext focuses on four key features: effortless collection, intelligent res
 
 ## Local-First
 
-MineContext places a high priority on user privacy. By default, all data is stored locally in the following path to ensure your privacy and security.
+Jarvis places a high priority on user privacy. By default, all data is stored locally in the following path to ensure your privacy and security.
 
 ```
-~/Library/Application Support/MineContext/Data
+~/Library/Application Support/Jarvis/Data
 ```
 
 ## Local AI model
 
-In addition, we support custom model services based on the OpenAI API protocol. You can use fully local models in MineContext, ensuring that any data does not leave your local environment.
+Jarvis now only works with local Ollama deployments over the OpenAI-compatible API, so your data never leaves your machine.
 
 # 🏁 Quick Start
 
 ## 1. Installation
 
-Click [Github Latest Release](https://github.com/volcengine/MineContext/releases) to Download
+Click [Github Latest Release](https://github.com/aguaitech/Jarvis/releases) to Download
 
 ![Download APP](src/Download-App.gif)
 
-> **Note**: Starting from v0.1.5, MineContext supports Apple notarization, so you no longer need to disable the quarantine attribute. If you're using an older version, please refer to the [previous documentation](https://github.com/volcengine/MineContext/blob/0.1.4/README.md) for instructions.
+> **Note**: Starting from v0.1.5, Jarvis supports Apple notarization, so you no longer need to disable the quarantine attribute. If you're using an older version, please refer to the [previous documentation](https://github.com/aguaitech/Jarvis/blob/0.1.4/README.md) for instructions.
 
 ## 2. Enter Your API Key
 
-After the application launches, please follow the prompts to enter your API key. (Note: On the first run, the application needs to install the backend environment, which may take about two minutes).
+After the application launches, configure your local Ollama endpoint. (Note: On the first run, the application needs to install the backend environment, which may take about two minutes).
 
-We currently support services from Doubao, OpenAI, and custom models. This includes any **local models** or **third-party model** services that are compatible with the OpenAI API format.
+Jarvis now only supports Ollama via the OpenAI-compatible API. Install [Ollama](https://ollama.com/), pull a model (for example `ollama pull llama3.1`), and set:
 
-We recommend using [LMStudio](https://lmstudio.ai/) to run local models. It provides a simple interface and powerful features to help you quickly deploy and manage them.
+- Base URL: `http://localhost:11434/v1`
+- Chat Model: `llama3.1` (or any other model served by your Ollama)
+- Embedding Model: `nomic-embed-text`
 
-**Considering both cost and performance, we recommend using the Doubao model.** The Doubao API Key can be generated in the [API Management Interface](https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey).
-
-After obtaining the Doubao API Key, you need to activate two models in the [Model Activation Management Interface](https://console.volcengine.com/ark/region:ark+cn-beijing/model): the Visual Language Model and the Embedding Model.
-
-- Visual Language Model: Doubao-Seed-1.6-flash
-  ![doubao-vlm-model](src/doubao-vlm-model.png)
-
-- Embedding Model: Doubao-embedding-large
-  ![doubao-emb-model](src/doubao-emb-model.png)
-
-The following is the filling process after obtaining the API Key:
-
-![Enter API Key](src/Enter-API-Key.gif)
+If your Ollama deployment enforces authentication, enter the API key in Settings; otherwise leave the key blank.
 
 ## 3. Start Recording
 
@@ -147,11 +120,11 @@ After restarting the application, please first set your screen sharing area in [
 
 ## 4. Forget it
 
-After starting the recording, your context will gradually be collected. It will take some time to generate value. So, forget about it and focus on other tasks with peace of mind. MineContext will generate to-dos, prompts, summaries, and activities for you in the background. Of course, you can also engage in proactive Q&A through [Chat with AI].
+After starting the recording, your context will gradually be collected. It will take some time to generate value. So, forget about it and focus on other tasks with peace of mind. Jarvis will generate to-dos, prompts, summaries, and activities for you in the background. Of course, you can also engage in proactive Q&A through [Chat with AI].
 
 ## 5. Backend Debugging
 
-MineContext supports backend debugging, which can be accessed at `http://localhost:1733`.
+Jarvis supports backend debugging, which can be accessed at `http://localhost:1733`.
 
 1.View Token Consumption and Usage
 ![后台调试1](src/backend-web-1.png)
@@ -166,7 +139,7 @@ MineContext supports backend debugging, which can be accessed at `http://localho
 
 ## 🎨 Frontend Architecture
 
-The MineContext frontend is a cross-platform desktop application built with Electron, React, and TypeScript, providing a modular, maintainable, and high-performance foundation for desktop development.
+The Jarvis frontend is a cross-platform desktop application built with Electron, React, and TypeScript, providing a modular, maintainable, and high-performance foundation for desktop development.
 
 ### Core Tech Stack
 
@@ -262,14 +235,14 @@ To build APP for macOS:
 ```bash
 pnpm build:mac
 # Data Path
-# ～/Library/Application\ Support/MineContext
+# ～/Library/Application\ Support/Jarvis
 ```
 
-The executable files generated by the packaging process will be stored in the `MineContext/frontend/dist` directory.
+The executable files generated by the packaging process will be stored in the `Jarvis/frontend/dist` directory.
 
 ## 🏗️ Backend Architecture
 
-MineContext adopts a modular, layered architecture design with clear separation of concerns and well-defined responsibilities for each component.
+Jarvis adopts a modular, layered architecture design with clear separation of concerns and well-defined responsibilities for each component.
 
 ### Core Architecture Components
 
@@ -322,7 +295,7 @@ opencontext/
 
 6. **LLM Integration** (`llm/`)
 
-   - Support for multiple LLM providers (OpenAI, Doubao)
+   - Local Ollama (OpenAI-compatible) provider
    - VLM (Vision-Language Model) integration
    - Embedding generation services
 
@@ -334,8 +307,8 @@ We recommend using [uv](https://docs.astral.sh/uv/) for fast and reliable packag
 
 ```bash
 # Clone repository
-git clone https://github.com/volcengine/MineContext.git
-cd MineContext
+git clone https://github.com/aguaitech/Jarvis.git
+cd Jarvis
 
 # Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -355,14 +328,16 @@ server:
   debug: false
 
 embedding_model:
-  provider: doubao # options: openai, doubao
-  api_key: your-api-key
-  model: doubao-embedding-large-text-240915
+  provider: ollama
+  api_key: "" # optional for local Ollama
+  base_url: http://localhost:11434/v1
+  model: nomic-embed-text
 
 vlm_model:
-  provider: doubao # options: openai, doubao
-  api_key: your-api-key
-  model: doubao-seed-1-6-flash-250828
+  provider: ollama
+  api_key: "" # optional for local Ollama
+  base_url: http://localhost:11434/v1
+  model: llama3.1
 
 capture:
   enabled: true
@@ -406,9 +381,9 @@ opencontext start --port 1733
 
 # 💎 The Philosophy Behind the Name
 
-The naming of MineContext also reflects the team's ingenuity. It signifies both "my context" and "mining context." It draws inspiration from the core philosophy of Minecraft—openness, creativity, and exploration.
+Jarvis is named after Tony Stark's legendary AI assistant in Iron Man—Just A Rather Very Intelligent System. We want the product to embody the same spirit: a proactive, dependable copilot that anticipates needs, handles complexity behind the scenes, and keeps you focused on what matters.
 
-If vast amounts of context are like scattered "blocks," then MineContext provides a "world" where you can freely build, combine, and create. Users can reimagine and create new content based on the collected massive context and generate high-quality information.
+Where Iron Man’s JARVIS orchestrates armor, sensors, and strategy, our Jarvis orchestrates your digital context—capturing, structuring, and resurfacing the right information at the right moment. It is built to feel like a trusted teammate that blends seamlessly into your workflow and amplifies your capabilities.
 
 # 🎯 Target User
 
@@ -466,59 +441,53 @@ We will prioritize the expansion of Context Sources according to the following p
 
 # 🆚 Comparison with Familiar Application
 
-## MineContext vs ChatGPT Pulse
+## Jarvis vs ChatGPT Pulse
 
 - 🖥️ Comprehensive Digital Context:
-  MineContext captures your entire digital workflow by reading from screen screenshots, providing a rich, visual context of your daily activities and applications. ChatGPT Pulse, in contrast, is limited to the context of a single text-based conversation.
+  Jarvis captures your entire digital workflow by reading from screen screenshots, providing a rich, visual context of your daily activities and applications. ChatGPT Pulse, in contrast, is limited to the context of a single text-based conversation.
 - 🔒 Local-First Data & Privacy:
   Your data is processed and stored entirely on your local device, ensuring complete privacy and security without relying on cloud servers. ChatGPT Pulse requires data to be sent to and stored on OpenAI's servers.
 - 🚀 Proactive & Diverse Insights:
-  MineContext delivers a wider variety of intelligent, auto-generated content—including daily summaries, actionable todos, and activity reports—not just simple tips. ChatGPT Pulse primarily offers reactive assistance within the chat interface.
+  Jarvis delivers a wider variety of intelligent, auto-generated content—including daily summaries, actionable todos, and activity reports—not just simple tips. ChatGPT Pulse primarily offers reactive assistance within the chat interface.
 - 🔧 Open Source & Customizable:
-  As an open-source project, MineContext allows developers to freely inspect, modify, and build upon the codebase for complete customization. ChatGPT Pulse is a closed, proprietary product with no option for modification.
+  As an open-source project, Jarvis allows developers to freely inspect, modify, and build upon the codebase for complete customization. ChatGPT Pulse is a closed, proprietary product with no option for modification.
 - 💰 Cost-Effective API Usage:
-  MineContext avoids the need for a costly $200/month Pro subscription by allowing you to use your own API key, giving you full control over your spending. ChatGPT Pulse's advanced features are locked behind its expensive premium tier.
+  Jarvis avoids the need for a costly $200/month Pro subscription by allowing you to use your own API key, giving you full control over your spending. ChatGPT Pulse's advanced features are locked behind its expensive premium tier.
 
-## MineContext vs Dayflow
+## Jarvis vs Dayflow
 
 - 💡 Richer, Proactive Insights:
-  MineContext delivers a more diverse range of automated, intelligent content—including concise summaries, actionable todos, and contextual tips—going beyond basic activity tracking. DayFlow primarily focuses on logging user activity.
+  Jarvis delivers a more diverse range of automated, intelligent content—including concise summaries, actionable todos, and contextual tips—going beyond basic activity tracking. DayFlow primarily focuses on logging user activity.
 - 🧠 Context-Aware Q&A & Creation:
-  MineContext enables you to ask questions and generate new content based on your captured context, unlocking wider application scenarios like content drafting and project planning. DayFlow is limited to passive activity recording and review.
+  Jarvis enables you to ask questions and generate new content based on your captured context, unlocking wider application scenarios like content drafting and project planning. DayFlow is limited to passive activity recording and review.
 - ✨ Superior Activity Generation & Experience:
-  MineContext produces activity records with greater clarity and detail, featuring a more intuitive and interactive dashboard for a seamless user experience. DayFlow's activity logs are more basic with limited interactivity.
+  Jarvis produces activity records with greater clarity and detail, featuring a more intuitive and interactive dashboard for a seamless user experience. DayFlow's activity logs are more basic with limited interactivity.
 
 <br>
 
-# 👥 Community
-
-## Community and Support
-
-- [GitHub Issues](https://github.com/volcengine/MineContext/issues): Errors and issues encountered while using MineContext.
-- [Email Support](mailto:minecontext@bytedance.com): Feedback and questions about using MineContext.
-- <a href="https://bytedance.larkoffice.com/wiki/Hg6VwrxnTiXtWUkgHexcFTqrnpg">WeChat Group</a>: Discuss SwanLab usage and share the latest AI technologies.
-
 # Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=volcengine/MineContext&type=Timeline)](https://www.star-history.com/#volcengine/MineContext&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=aguaitech/Jarvis&type=Timeline)](https://www.star-history.com/#aguaitech/Jarvis&Timeline)
 
 # 📃 License
 
 This repository is licensed under the Apache 2.0 License.
 
+# 🙏 Acknowledgment
+
+Inspired by and built upon the open-source work from https://github.com/volcengine/MineContext.
+
 <!-- link -->
 
-[release-shield]: https://img.shields.io/github/v/release/volcengine/MineContext?color=369eff&labelColor=black&logo=github&style=flat-square
-[release-link]: https://github.com/volcengine/MineContext/releases
+[release-shield]: https://img.shields.io/github/v/release/aguaitech/Jarvis?color=369eff&labelColor=black&logo=github&style=flat-square
+[release-link]: https://github.com/aguaitech/Jarvis/releases
 [license-shield]: https://img.shields.io/badge/license-apache%202.0-white?labelColor=black&style=flat-square
-[license-shield-link]: https://github.com/volcengine/MineContext/blob/main/LICENSE
-[last-commit-shield]: https://img.shields.io/github/last-commit/volcengine/MineContext?color=c4f042&labelColor=black&style=flat-square
-[last-commit-shield-link]: https://github.com/volcengine/MineContext/commits/main
-[wechat-shield]: https://img.shields.io/badge/WeChat-微信-4cb55e?labelColor=black&style=flat-square
-[wechat-shield-link]: https://bytedance.larkoffice.com/wiki/Hg6VwrxnTiXtWUkgHexcFTqrnpg
-[github-stars-shield]: https://img.shields.io/github/stars/volcengine/MineContext?labelColor&style=flat-square&color=ffcb47
-[github-stars-link]: https://github.com/volcengine/MineContext
-[github-issues-shield]: https://img.shields.io/github/issues/volcengine/MineContext?labelColor=black&style=flat-square&color=ff80eb
-[github-issues-shield-link]: https://github.com/volcengine/MineContext/issues
-[github-contributors-shield]: https://img.shields.io/github/contributors/volcengine/MineContext?color=c4f042&labelColor=black&style=flat-square
-[github-contributors-link]: https://github.com/volcengine/MineContext/graphs/contributors
+[license-shield-link]: https://github.com/aguaitech/Jarvis/blob/main/LICENSE
+[last-commit-shield]: https://img.shields.io/github/last-commit/aguaitech/Jarvis?color=c4f042&labelColor=black&style=flat-square
+[last-commit-shield-link]: https://github.com/aguaitech/Jarvis/commits/main
+[github-stars-shield]: https://img.shields.io/github/stars/aguaitech/Jarvis?labelColor&style=flat-square&color=ffcb47
+[github-stars-link]: https://github.com/aguaitech/Jarvis
+[github-issues-shield]: https://img.shields.io/github/issues/aguaitech/Jarvis?labelColor=black&style=flat-square&color=ff80eb
+[github-issues-shield-link]: https://github.com/aguaitech/Jarvis/issues
+[github-contributors-shield]: https://img.shields.io/github/contributors/aguaitech/Jarvis?color=c4f042&labelColor=black&style=flat-square
+[github-contributors-link]: https://github.com/aguaitech/Jarvis/graphs/contributors

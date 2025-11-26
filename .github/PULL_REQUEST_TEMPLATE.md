@@ -7,7 +7,7 @@ Closes: #(issue)
 
 ## 🎯 PRs Should Target Issues
 
-Before your create a PR, please check to see if there is [an existing issue](https://github.com/volcengine/MineContext/issues)
+Before your create a PR, please check to see if there is [an existing issue](https://github.com/aguaitech/Jarvis/issues)
 for this change. If not, please create an issue before you create this PR, unless the fix is very small.
 
 Not adhering to this guideline will result in the PR being closed.

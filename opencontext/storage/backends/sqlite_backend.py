@@ -364,10 +364,10 @@ class SQLiteBackend(IDocumentStorageBackend):
                 # If file doesn't exist, use fallback content
                 logger.error(
                     f"Quick Start document {quick_start_file} does not exist")
-                default_content = "Welcome to MineContext!\n\nYour Context-Aware AI Partner is ready to help you work, study, and create better."
+                default_content = "Welcome to Jarvis!\n\nYour Context-Aware AI Partner is ready to help you work, study, and create better."
 
         except Exception as e:
-            default_content = "Welcome to MineContext!\n\nYour Context-Aware AI Partner is ready to help you work, study, and create better."
+            default_content = "Welcome to Jarvis!\n\nYour Context-Aware AI Partner is ready to help you work, study, and create better."
 
         # Insert default document
         try:

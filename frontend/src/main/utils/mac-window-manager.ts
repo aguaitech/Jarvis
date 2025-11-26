@@ -124,7 +124,7 @@ export const getAllWindows = async (): Promise<FinalWindowInfo[]> => {
       ]
 
       const systemApps = [
-        'MineContext',
+        'Jarvis',
         'Electron',
         'SystemUIServer',
         'Dock',

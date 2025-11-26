@@ -545,7 +545,7 @@ processing:
           ## 字段规范
           - **title**: 根据context_type生成合适的标题：
             * **activity_context**: 行为导向标题，包含主体和动作（如"current_user查看记忆库配置"）
-            * **semantic_context**: 核心概念或知识点的简洁表述，只包含知识本身（如"MineContext技术架构"、"React Hooks使用原理"）
+            * **semantic_context**: 核心概念或知识点的简洁表述，只包含知识本身（如"Jarvis技术架构"、"React Hooks使用原理"）
             * **procedural_context**: 用户操作流程的任务描述（如"使用Git进行代码合并的步骤"、"配置Docker容器的操作流程"）
             * **state_context**: 状态描述（如"项目进度：前端开发完成80%"、"系统性能：CPU使用率75%"）
             * **intent_context**: 计划或目标表述（如"下周产品发布准备事项"、"Q4季度技术规划"）
@@ -559,7 +559,7 @@ processing:
             * **semantic_context**: 提取核心知识要点、概念定义、技术原理。只记录知识本身，不包含获取过程。
               - **描述风格**：主语为技术/概念/系统，使用说明性动词（采用、支持、包含、实现等）
               - **内容重点**：知识是什么、架构如何、原理为何、技术特点
-              - **示例**："MineContext采用混合存储架构，支持隐私本地存储和云推理，基于Python+FastAPI+ChromaDB技术栈，核心模块包括..."
+              - **示例**："Jarvis采用混合存储架构，支持隐私本地存储和云推理，基于Python+FastAPI+ChromaDB技术栈，核心模块包括..."
               - **禁止**：避免"用户学习了"、"current_user查看了"等用户行为描述
 
             * **procedural_context**: 记录用户完成特定任务的操作步骤序列。基于截图时序学习操作模式。
@@ -735,7 +735,7 @@ merging:
 
       - **title**: 根据context_type生成合适的标题：
         * **activity_context**: 行为导向标题，包含主体和动作（如"current_user查看记忆库配置"）
-        * **semantic_context**: 核心概念或知识点的简洁表述（如"MineContext技术架构"）
+        * **semantic_context**: 核心概念或知识点的简洁表述（如"Jarvis技术架构"）
         * **procedural_context**: 操作流程的任务描述（如"使用Git进行代码合并的步骤"）
         * **state_context**: 状态描述（如"项目进度：前端开发完成80%"）
         * **intent_context**: 计划或目标表述（如"下周产品发布准备事项"）
@@ -761,7 +761,7 @@ merging:
 
       - **entities**: 从合并内容中识别的关键实体列表（**必填，不能为空数组**）：
         * **必须提取的实体类型**：
-          - 项目名称（如 MineContext、WebKnowledge、React 等）
+          - 项目名称（如 Jarvis、WebKnowledge、React 等）
           - 产品/工具名称（如 Electron、Docker、IDE、Terminal、Xcode 等）
           - 人员（current_user 或其他具体姓名）
           - 组织/平台（如 Apple、GitHub、飞书 等）
@@ -1520,9 +1520,9 @@ document_processing:
       "这张图片是一个网页截图，左上角有 logo，右上角有搜索框。中间主体部分展示产品信息，右上角有按钮。"
 
       **示例（正确）**：
-      "MineContext
+      "Jarvis
 
-      MineContext 是一个主动感知和推理的 AI 合作伙伴。它利用屏幕截图和内容理解，能够洞察并理解用户的数字世界情境。
+      Jarvis 是一个主动感知和推理的 AI 合作伙伴。它利用屏幕截图和内容理解，能够洞察并理解用户的数字世界情境。
 
       产品功能：
       - 轻松收集：轻松处理海量上下文信息
@@ -1598,29 +1598,29 @@ document_processing:
       **示例 2 - 段落切分**:
       原文:
       ```
-      MineContext 技术架构
+      Jarvis 技术架构
 
-      MineContext 采用混合存储架构,支持隐私本地存储和云端推理。核心模块包括上下文捕获、处理、存储、检索和消费。
+      Jarvis 采用混合存储架构,支持隐私本地存储和云端推理。核心模块包括上下文捕获、处理、存储、检索和消费。
 
       系统基于 Python+FastAPI+ChromaDB 技术栈,提供完整的生命周期管理。
       ```
 
       ❌ 错误切分（主题丢失）:
       ```
-      块1: "MineContext 技术架构\n\nMineContext 采用混合存储架构..."
+      块1: "Jarvis 技术架构\n\nJarvis 采用混合存储架构..."
       块2: "系统基于 Python+FastAPI+ChromaDB..."  # 不知道在说什么系统
       ```
 
       ✅ 正确做法（保持完整或补充上下文）:
       方案A - 保持完整:
       ```
-      块1: "MineContext 技术架构\n\nMineContext 采用混合存储架构...核心模块包括...\n\n系统基于 Python+FastAPI+ChromaDB..."
+      块1: "Jarvis 技术架构\n\nJarvis 采用混合存储架构...核心模块包括...\n\n系统基于 Python+FastAPI+ChromaDB..."
       ```
 
       方案B - 补充上下文（仅在内容过长时）:
       ```
-      块1: "MineContext 技术架构\n\nMineContext 采用混合存储架构...核心模块包括..."
-      块2: "MineContext 技术架构（续）\n\nMineContext 系统基于 Python+FastAPI+ChromaDB..."
+      块1: "Jarvis 技术架构\n\nJarvis 采用混合存储架构...核心模块包括..."
+      块2: "Jarvis 技术架构（续）\n\nJarvis 系统基于 Python+FastAPI+ChromaDB..."
       ```
 
       ## 输出要求

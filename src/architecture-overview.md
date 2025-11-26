@@ -1,8 +1,8 @@
-# MineContext Architecture Overview
+# Jarvis Architecture Overview
 
 ## System Architecture
 
-MineContext is designed as a modular, event-driven system with clear separation of concerns. The architecture follows a layered approach with well-defined interfaces between components.
+Jarvis is designed as a modular, event-driven system with clear separation of concerns. The architecture follows a layered approach with well-defined interfaces between components.
 
 ## System Components
 
@@ -38,7 +38,7 @@ MineContext is designed as a modular, event-driven system with clear separation 
 ┌──────────────────────────────────────────────────────────┐
 │                        LLM Layer                         │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │    OpenAI    │  │    Doubao    │  │  Vectorization│ │
+│  │    Ollama    │  │  (local)     │  │  Vectorization│ │
 │  │              │  │              │  │     Models   │  │
 │  └──────────────┘  └──────────────┘  └──────────────┘  │
 └──────────────────────────────────────────────────────────┘
@@ -46,7 +46,7 @@ MineContext is designed as a modular, event-driven system with clear separation 
 
 ### System Flow
 
-The MineContext system flow is designed as a highly modular and extensible architecture, divided into five core components: context capture, processing, storage, services/tools, and consumption.
+The Jarvis system flow is designed as a highly modular and extensible architecture, divided into five core components: context capture, processing, storage, services/tools, and consumption.
 
 #### 1. Context Capture
 
@@ -242,7 +242,7 @@ The system uses a layered configuration approach:
 
 ```
 ┌─────────────┐
-│  MineContext    │
+│  Jarvis    │
 │  Application    │
 │                 │
 │  - Web Server   │

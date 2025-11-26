@@ -122,7 +122,7 @@ export class TrayService {
       this.tray = new Tray(this.trayIcon)
 
       // Set tooltip
-      this.tray.setToolTip('MineContext')
+      this.tray.setToolTip('Jarvis')
 
       // Platform-specific behavior
       if (process.platform === 'win32') {
@@ -196,7 +196,7 @@ export class TrayService {
         type: 'separator'
       },
       {
-        label: '退出 MineContext',
+        label: '退出 Jarvis',
         click: () => {
           this.quitApp()
         }
@@ -263,7 +263,7 @@ export class TrayService {
       }
 
       // Update tooltip
-      const tooltip = isRecording ? 'MineContext - 录制中' : 'MineContext - 已暂停'
+      const tooltip = isRecording ? 'Jarvis - 录制中' : 'Jarvis - 已暂停'
       this.tray.setToolTip(tooltip)
 
       // Update context menu

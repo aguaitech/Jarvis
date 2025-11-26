@@ -20,8 +20,7 @@ logger = get_logger(__name__)
 
 
 class LLMProvider(Enum):
-    OPENAI = "openai"
-    DOUBAO = "doubao"
+    OLLAMA = "ollama"
 
 
 class LLMType(Enum):
@@ -37,9 +36,9 @@ class LLMClient:
         self.api_key = config.get("api_key")
         self.base_url = config.get("base_url")
         self.timeout = config.get("timeout", 300)
-        self.provider = config.get("provider", LLMProvider.OPENAI.value)
-        if not self.api_key or not self.base_url or not self.model:
-            raise ValueError("API key, base URL, and model must be provided")
+        self.provider = config.get("provider", LLMProvider.OLLAMA.value)
+        if not self.base_url or not self.model:
+            raise ValueError("Base URL and model must be provided")
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
         self.async_client = AsyncOpenAI(
             api_key=self.api_key, base_url=self.base_url, timeout=self.timeout
@@ -106,8 +105,7 @@ class LLMClient:
                 create_params["tool_choice"] = "auto"
 
             if thinking:
-                if self.provider == LLMProvider.DOUBAO.value:
-                    create_params["extra_body"] = {"thinking": {"type": thinking}}
+                create_params["extra_body"] = {"thinking": {"type": thinking}}
 
             # Stage: LLM API call
             api_start = time.time()
@@ -136,7 +134,7 @@ class LLMClient:
 
             return response
         except APIError as e:
-            logger.error(f"OpenAI API error: {e}")
+            logger.error(f"LLM API error: {e}")
             # Record failure
             try:
                 record_processing_stage(
@@ -164,8 +162,7 @@ class LLMClient:
                 create_params["tool_choice"] = "auto"
 
             if thinking:
-                if self.provider == LLMProvider.DOUBAO.value:
-                    create_params["extra_body"] = {"thinking": {"type": thinking}}
+                create_params["extra_body"] = {"thinking": {"type": thinking}}
             # Stage: LLM API call
             api_start = time.time()
             response = await self.async_client.chat.completions.create(**create_params)
@@ -190,7 +187,7 @@ class LLMClient:
 
             return response
         except APIError as e:
-            logger.exception(f"OpenAI API async error: {e}")
+            logger.exception(f"LLM API async error: {e}")
             # Record failure
             try:
                 record_processing_stage(
@@ -216,13 +213,12 @@ class LLMClient:
                 create_params["tool_choice"] = "auto"
 
             if thinking:
-                if self.provider == LLMProvider.DOUBAO.value:
-                    create_params["extra_body"] = {"thinking": {"type": thinking}}
+                create_params["extra_body"] = {"thinking": {"type": thinking}}
 
             stream = self.client.chat.completions.create(**create_params)
             return stream
         except APIError as e:
-            logger.error(f"OpenAI API stream error: {e}")
+            logger.error(f"LLM API stream error: {e}")
             raise
 
     async def _openai_chat_completion_stream_async(self, messages: List[Dict[str, Any]], **kwargs):
@@ -248,8 +244,7 @@ class LLMClient:
                 create_params["tool_choice"] = "auto"
 
             if thinking:
-                if self.provider == LLMProvider.DOUBAO.value:
-                    create_params["extra_body"] = {"thinking": {"type": thinking}}
+                create_params["extra_body"] = {"thinking": {"type": thinking}}
 
             stream = await async_client.chat.completions.create(**create_params)
 
@@ -257,7 +252,7 @@ class LLMClient:
             async for chunk in stream:
                 yield chunk
         except APIError as e:
-            logger.error(f"OpenAI API async stream error: {e}")
+            logger.error(f"LLM API async stream error: {e}")
             raise
 
     def _openai_embedding(self, text: str, **kwargs) -> List[float]:
@@ -290,7 +285,7 @@ class LLMClient:
 
             return embedding
         except APIError as e:
-            logger.error(f"OpenAI API error during embedding: {e}")
+            logger.error(f"LLM API error during embedding: {e}")
             raise
           
     async def _openai_embedding_async(self, text: str, **kwargs) -> List[float]:
@@ -323,7 +318,7 @@ class LLMClient:
 
             return embedding
         except APIError as e:
-            logger.error(f"OpenAI API error during embedding: {e}")
+            logger.error(f"LLM API error during embedding: {e}")
             raise
 
 

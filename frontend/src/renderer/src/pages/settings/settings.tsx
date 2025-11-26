@@ -1,12 +1,12 @@
 // Copyright (c) 2025 Beijing Volcano Engine Technology Co., Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FC, useMemo, useEffect } from 'react'
-import { Form, Button, Select, Input, Typography, Spin, Message } from '@arco-design/web-react'
-import { find, get, isEmpty, pick } from 'lodash'
+import { FC, useEffect } from 'react'
+import { Form, Button, Input, Typography, Spin, Message } from '@arco-design/web-react'
+import { get, isEmpty, pick } from 'lodash'
 
 import ModelRadio from './components/modelRadio/model-radio'
-import { ModelTypeList, BaseUrl, embeddingModels, ModelInfoList } from './constants'
+import { ModelTypeList } from './constants'
 import { getModelInfo, ModelConfigProps, updateModelSettingsAPI } from '../../services/Settings'
 import { useMemoizedFn, useMount, useRequest } from 'ahooks'
 
@@ -55,7 +55,7 @@ const CustomFormItems: FC<CustomFormItemsProps> = (props) => {
             requiredSymbol={false}>
             <Input
               addBefore={<InputPrefix label="Base URL" />}
-              placeholder="Enter your base URL"
+              placeholder="Enter your base URL (e.g. http://localhost:11434/v1)"
               allowClear
               className="[&_.arco-input-inner-wrapper]: !w-[574px]"
             />
@@ -63,11 +63,10 @@ const CustomFormItems: FC<CustomFormItemsProps> = (props) => {
           <FormItem
             field={`${prefix}-apiKey`}
             className="!mb-0"
-            rules={[{ required: true, message: 'Cannot be empty' }]}
             requiredSymbol={false}>
             <Input
               addBefore={<InputPrefix label="API Key" />}
-              placeholder="Enter your API Key"
+              placeholder="Optional API Key"
               allowClear
               className="!w-[574px]"
             />
@@ -94,7 +93,7 @@ const CustomFormItems: FC<CustomFormItemsProps> = (props) => {
             requiredSymbol={false}>
             <Input
               addBefore={<InputPrefix label="Base URL" />}
-              placeholder="Enter your base URL"
+              placeholder="Enter your base URL (e.g. http://localhost:11434/v1)"
               allowClear
               className="!w-[574px]"
             />
@@ -102,83 +101,16 @@ const CustomFormItems: FC<CustomFormItemsProps> = (props) => {
           <FormItem
             field={`${prefix}-embeddingApiKey`}
             className="!mb-0"
-            rules={[{ required: true, message: 'Cannot be empty' }]}
             requiredSymbol={false}>
             <Input
               addBefore={<InputPrefix label="API Key" />}
-              placeholder="Enter your API Key"
+              placeholder="Optional API Key"
               allowClear
               className="!w-[574px]"
             />
           </FormItem>
         </div>
       </div>
-    </>
-  )
-}
-export interface StandardFormItemsProps {
-  modelPlatform: ModelTypeList
-  prefix: string
-}
-const StandardFormItems: FC<StandardFormItemsProps> = (props) => {
-  const { modelPlatform, prefix } = props
-  const option = useMemo(() => {
-    const foundItem = find(ModelInfoList, (item) => item.value === modelPlatform)
-    return foundItem ? foundItem.option : []
-  }, [modelPlatform])
-
-  return (
-    <>
-      <FormItem
-        label="Select AI model"
-        field={`${prefix}-modelId`}
-        requiredSymbol={false}
-        rules={[
-          {
-            validator(value, callback) {
-              if (!value) {
-                callback('Please select AI model')
-              } else {
-                callback()
-              }
-            }
-          }
-        ]}>
-        <Select allowCreate placeholder="please select" options={option} className="!w-[574px]" />
-      </FormItem>
-      <FormItem
-        requiredSymbol={false}
-        label="API Key"
-        field={`${prefix}-apiKey`}
-        extra={
-          <div className="flex items-center text-[#6E718C] text-[14px] ">
-            You can get the API Key Here:
-            <Button
-              onClick={() => {
-                const url =
-                  modelPlatform === ModelTypeList.Doubao
-                    ? 'https://www.volcengine.com/docs/82379/1541594'
-                    : 'https://platform.openai.com/settings/organization/api-keys'
-                window.open(`${url}`)
-              }}
-              type="text">
-              {modelPlatform === ModelTypeList.Doubao ? 'Get Doubao API Key' : 'Get OpenAI API Key'}
-            </Button>
-          </div>
-        }
-        rules={[
-          {
-            validator(value, callback) {
-              if (!value) {
-                callback('Please enter your API key')
-              } else {
-                callback()
-              }
-            }
-          }
-        ]}>
-        <Input autoFocus placeholder="Enter your API key" allowClear className="!w-[574px]" />
-      </FormItem>
     </>
   )
 }
@@ -189,12 +121,7 @@ export interface SettingsFormBase {
 }
 
 export type SettingsFormProps = SettingsFormBase & {
-  [K in ModelTypeList as `${K}-modelId` | `${K}-apiKey`]?: string
-} & {
-  [K in
-    | `${ModelTypeList.Custom}-embeddingModelId`
-    | `${ModelTypeList.Custom}-embeddingBaseUrl`
-    | `${ModelTypeList.Custom}-embeddingApiKey`]?: string
+  [K in ModelTypeList as `${K}-modelId` | `${K}-apiKey` | `${K}-baseUrl` | `${K}-embeddingModelId` | `${K}-embeddingBaseUrl` | `${K}-embeddingApiKey`]?: string
 }
 const Settings: FC<SettingsProps> = (props) => {
   const { closeSetting, init } = props
@@ -220,7 +147,6 @@ const Settings: FC<SettingsProps> = (props) => {
     try {
       await form.validate()
       const values = form.getFieldsValue()
-      const isCustom = values.modelPlatform === ModelTypeList.Custom
       if (!values.modelPlatform) {
         Message.error('Please select Model Platform')
         return
@@ -238,18 +164,7 @@ const Settings: FC<SettingsProps> = (props) => {
       const formatData = Object.fromEntries(
         Object.entries(data).map(([key, value]) => [key.replace(`${values.modelPlatform}-`, ''), value])
       )
-      const params = isCustom
-        ? formatData
-        : {
-            ...formatData,
-            baseUrl: values.modelPlatform === ModelTypeList.Doubao ? BaseUrl.DoubaoUrl : BaseUrl.OpenAIUrl,
-            embeddingModelId:
-              values.modelPlatform === ModelTypeList.Doubao
-                ? embeddingModels.DoubaoEmbeddingModelId
-                : embeddingModels.OpenAIEmbeddingModelId
-          }
-
-      updateModelSettings(params as unknown as ModelConfigProps)
+      updateModelSettings(formatData as unknown as ModelConfigProps)
     } catch (error: any) {}
   })
 
@@ -279,7 +194,7 @@ const Settings: FC<SettingsProps> = (props) => {
           <div className="mb-[12px]">
             <div className="mt-[26px] mb-[10px] text-[24px] font-bold text-[#000]">Select a AI model to start</div>
             <Text type="secondary" className="text-[13px]">
-              Configure AI model and API Key, then you can start MineContext’s intelligent context capability
+              Configure AI model and API Key, then you can start Jarvis’s intelligent context capability
             </Text>
           </div>
 
@@ -289,9 +204,11 @@ const Settings: FC<SettingsProps> = (props) => {
               layout={'vertical'}
               form={form}
               initialValues={{
-                modelPlatform: ModelTypeList.Doubao,
-                [`${ModelTypeList.Doubao}-modelId`]: 'doubao-seed-1-6-flash-250828',
-                [`${ModelTypeList.OpenAI}-modelId`]: 'gpt-5-nano'
+                modelPlatform: ModelTypeList.Ollama,
+                [`${ModelTypeList.Ollama}-modelId`]: 'llama3.1',
+                [`${ModelTypeList.Ollama}-embeddingModelId`]: 'nomic-embed-text',
+                [`${ModelTypeList.Ollama}-baseUrl`]: 'http://localhost:11434/v1',
+                [`${ModelTypeList.Ollama}-embeddingBaseUrl`]: 'http://localhost:11434/v1'
               }}>
               <FormItem label="Model platform" field={'modelPlatform'} requiredSymbol={false}>
                 <ModelRadio />
@@ -301,15 +218,9 @@ const Settings: FC<SettingsProps> = (props) => {
                 noStyle>
                 {(values) => {
                   const modelPlatform = values.modelPlatform
-                  if (modelPlatform === ModelTypeList.Custom) {
-                    return <CustomFormItems prefix={ModelTypeList.Custom} />
-                  } else if (modelPlatform === ModelTypeList.Doubao) {
-                    return <StandardFormItems modelPlatform={modelPlatform} prefix={ModelTypeList.Doubao} />
-                  } else if (modelPlatform === ModelTypeList.OpenAI) {
-                    return <StandardFormItems modelPlatform={modelPlatform} prefix={ModelTypeList.OpenAI} />
-                  } else {
-                    return null
-                  }
+                  return modelPlatform ? (
+                    <CustomFormItems prefix={modelPlatform} />
+                  ) : null
                 }}
               </FormItem>
             </Form>
