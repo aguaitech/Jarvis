@@ -208,8 +208,16 @@ class SmartTodoManager:
                 for context_type, context_list in contexts.items():
                     all_contexts.extend(context_list)
 
-            # Sort by time, with the newest first
-            all_contexts.sort(key=lambda x: x.properties.create_time, reverse=True)
+            # Sort by time, with the newest first (normalize tz-aware/naive)
+            def _ctx_ts(ctx):
+                dt = ctx.properties.create_time
+                try:
+                    return dt.timestamp()
+                except Exception:
+                    # fallback to string comparison if timestamp fails
+                    return dt.isoformat()
+
+            all_contexts.sort(key=_ctx_ts, reverse=True)
             logger.info(
                 f"Retrieved {len(all_contexts)} context records relevant to task identification."
             )

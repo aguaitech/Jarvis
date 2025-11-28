@@ -92,6 +92,7 @@ const screenMonitorAPI = {
   getScreenshotsByDate: (date?: string) => ipcRenderer.invoke(IpcChannel.Screen_Monitor_Get_Screenshots_By_Date, date),
   getCaptureAllSources: (thumbnailSize?: { width: number; height: number }) =>
     ipcRenderer.invoke(IpcChannel.Screen_Monitor_Get_Capture_All_Sources, thumbnailSize),
+  getActiveWindowSource: () => ipcRenderer.invoke(IpcChannel.Screen_Monitor_Get_Active_Window_Source),
   getSettings: (key: string) => ipcRenderer.invoke(IpcChannel.Screen_Monitor_Get_Settings, key),
   setSettings: (key: string, value: unknown) => ipcRenderer.invoke(IpcChannel.Screen_Monitor_Set_Settings, key, value),
   clearSettings: (key: string) => ipcRenderer.invoke(IpcChannel.Screen_Monitor_Clear_Settings, key),

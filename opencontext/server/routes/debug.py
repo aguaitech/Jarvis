@@ -24,6 +24,69 @@ from opencontext.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 router = APIRouter(tags=["debug"])
 
+# Helpers for admin actions
+def _clear_activity_table():
+    storage = get_storage()
+    backend = getattr(storage, "_document_backend", None)
+    if backend is None:
+        return False, "Document backend not initialized"
+
+    # Try raw SQL if SQLite backend
+    conn = getattr(backend, "connection", None)
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM activity")
+        conn.commit()
+        return True, "Activity table cleared"
+
+    return False, "Unsupported backend for clearing activities"
+
+
+def _clear_processed_contexts():
+    storage = get_storage()
+    if storage is None:
+        return False, "Storage not initialized"
+
+    try:
+        if hasattr(storage, "get_all_processed_contexts"):
+            deleted = 0
+            offset = 0
+            batch = 500
+            while True:
+                contexts_dict = storage.get_all_processed_contexts(limit=batch, offset=offset, filter={})  # type: ignore
+                all_ctx = []
+                for _, lst in (contexts_dict or {}).items():
+                    all_ctx.extend(lst or [])
+                if not all_ctx:
+                    break
+                for ctx in all_ctx:
+                    ctx_id = getattr(ctx, "id", None) or (ctx.get("id") if isinstance(ctx, dict) else None)
+                    ctx_type = None
+                    if hasattr(ctx, "extracted_data"):
+                        ctx_type = getattr(ctx.extracted_data, "context_type", None)
+                    elif isinstance(ctx, dict):
+                        ctx_type = ctx.get("extracted_data", {}).get("context_type") or ctx.get("context_type")
+                    if hasattr(ctx_type, "value"):
+                        ctx_type = ctx_type.value
+                    if ctx_id and ctx_type:
+                        storage.delete_processed_context(ctx_id, ctx_type)
+                        deleted += 1
+                offset += batch
+            return True, f"Deleted {deleted} processed contexts"
+
+        return True, "Context clearing not supported for current storage backend"
+    except Exception as e:
+        logger.exception(f"Failed to clear processed contexts: {e}")
+        return False, str(e)
+
+
+def _clear_all_data():
+    ok_ctx, msg_ctx = _clear_processed_contexts()
+    ok_act, msg_act = _clear_activity_table()
+    success = ok_ctx and ok_act
+    msg = f"contexts: {msg_ctx}; activities: {msg_act}"
+    return success, msg
+
 
 @router.get("/api/debug/reports")
 async def get_debug_reports(
@@ -144,8 +207,8 @@ async def update_debug_todo_status(
 
 @router.post("/api/debug/generate/report")
 async def manual_generate_debug_report(
-    start_time: Optional[int] = Query(None, description="Start timestamp"),
-    end_time: Optional[int] = Query(None, description="End timestamp"),
+    start_time: Optional[int] = None,
+    end_time: Optional[int] = None,
     opencontext: OpenContext = Depends(get_context_lab),
     _auth: str = auth_dependency,
 ):
@@ -188,7 +251,7 @@ async def manual_generate_debug_report(
 
 @router.post("/api/debug/generate/activity")
 async def manual_generate_debug_activity(
-    minutes: int = Query(15, description="Review minutes"),
+    minutes: int = 15,
     opencontext: OpenContext = Depends(get_context_lab),
     _auth: str = auth_dependency,
 ):
@@ -284,6 +347,44 @@ async def manual_generate_debug_todos(
     except Exception as e:
         logger.exception(f"Error generating debug todos: {e}")
         return convert_resp(code=500, status=500, message=f"Failed to generate todos: {str(e)}")
+
+
+# --- Admin aliases for frontend debug buttons ---
+
+@router.post("/api/admin/generate_activity_now")
+async def admin_generate_activity_now(opencontext: OpenContext = Depends(get_context_lab), _auth: str = auth_dependency):
+    """Alias to manual activity generation for admin/debug buttons."""
+    return await manual_generate_debug_activity(minutes=15, opencontext=opencontext, _auth=_auth)  # type: ignore
+
+
+@router.post("/api/admin/generate_summary_now")
+async def admin_generate_summary_now(opencontext: OpenContext = Depends(get_context_lab), _auth: str = auth_dependency):
+    """Alias to manual report generation for admin/debug buttons."""
+    return await manual_generate_debug_report(start_time=None, end_time=None, opencontext=opencontext, _auth=_auth)  # type: ignore
+
+
+@router.post("/api/admin/clear_contexts")
+async def admin_clear_contexts(_auth: str = auth_dependency):
+    ok, msg = _clear_processed_contexts()
+    if ok:
+        return convert_resp(data={"message": msg})
+    return convert_resp(code=500, status=500, message=msg)
+
+
+@router.post("/api/admin/clear_activities")
+async def admin_clear_activities(_auth: str = auth_dependency):
+    ok, msg = _clear_activity_table()
+    if ok:
+        return convert_resp(data={"message": msg})
+    return convert_resp(code=500, status=500, message=msg)
+
+
+@router.post("/api/admin/clear_all")
+async def admin_clear_all(_auth: str = auth_dependency):
+    ok, msg = _clear_all_data()
+    if ok:
+        return convert_resp(data={"message": msg})
+    return convert_resp(code=500, status=500, message=msg)
 
 
 @router.get("/api/debug/prompts/export")

@@ -10,7 +10,7 @@ export const useSetting = () => {
   const dispatch = useAppDispatch()
   const screenSettings = useSelector((state: RootState) => state.setting.screenSettings)
 
-  const { recordInterval, recordingHours, enableRecordingHours, applyToDays } = screenSettings
+  const { recordInterval, recordingHours, enableRecordingHours, applyToDays, maxConcurrentCaptures } = screenSettings
 
   const setRecordInterval = useCallback(
     (interval: number) => {
@@ -40,14 +40,23 @@ export const useSetting = () => {
     [dispatch]
   )
 
+  const setMaxConcurrentCaptures = useCallback(
+    (count: number) => {
+      dispatch(setScreenSettingsAction({ maxConcurrentCaptures: count }))
+    },
+    [dispatch]
+  )
+
   return {
     recordInterval,
     recordingHours,
     enableRecordingHours,
     applyToDays,
+    maxConcurrentCaptures,
     setRecordInterval,
     setEnableRecordingHours,
     setRecordingHours,
-    setApplyToDays
+    setApplyToDays,
+    setMaxConcurrentCaptures
   }
 }

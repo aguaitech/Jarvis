@@ -290,11 +290,25 @@ class ScreenshotProcessor(BaseContextProcessor):
             raise ValueError(f"Failed to get VLM response. Error: {e}")
 
         raw_resp = parse_json_from_response(raw_llm_response)
-        if not raw_resp:
-            logger.error(f"Empty VLM response.")
-            raise ValueError(f"Empty VLM response.")
-        
-        items = raw_resp.get("items", [])
+        items: List[Dict[str, Any]] = []
+
+        if isinstance(raw_resp, list):
+            logger.warning("VLM response is a list; treating it as items")
+            logger.warning(f"raw_resp: {raw_resp}")
+            items = [i for i in raw_resp if isinstance(i, dict)]
+        elif isinstance(raw_resp, dict):
+            items = raw_resp.get("items", [])
+            if not isinstance(items, list):
+                logger.error(f"'items' field is not a list: {type(items)}")
+                items = []
+        else:
+            logger.error(f"Unexpected VLM response type: {type(raw_resp)}")
+            raise ValueError(f"Unexpected VLM response type: {type(raw_resp)}")
+
+        if not items:
+            logger.error("Empty VLM response items.")
+            raise ValueError("Empty VLM response items.")
+
         processed_items = []
         for item in items:
             processed_items.append(self._create_processed_context(item, raw_context))
@@ -576,6 +590,7 @@ class ScreenshotProcessor(BaseContextProcessor):
                 content_format=ContentFormat.TEXT,
                 text=f"{extracted_data.title} {extracted_data.summary}",
             ),
+            metadata=raw_context.additional_info if raw_context and raw_context.additional_info else {},
         )
         return new_context
 

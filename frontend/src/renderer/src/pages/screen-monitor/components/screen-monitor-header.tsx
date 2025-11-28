@@ -14,6 +14,9 @@ interface ScreenMonitorHeaderProps {
   onStartMonitoring: () => void
   onStopMonitoring: () => void
   onRequestPermission: () => void
+  onCaptureNow: () => void
+  failedCount: number
+  onRetryFailure: () => void
 }
 
 const ScreenMonitorHeader: React.FC<ScreenMonitorHeaderProps> = ({
@@ -24,7 +27,10 @@ const ScreenMonitorHeader: React.FC<ScreenMonitorHeaderProps> = ({
   appAllSources,
   onOpenSettings,
   onStartMonitoring,
-  onStopMonitoring
+  onStopMonitoring,
+  onCaptureNow,
+  failedCount,
+  onRetryFailure
 }) => {
   return (
     <div className="flex justify-between items-start mb-3 flex-col md:flex-row">
@@ -42,6 +48,23 @@ const ScreenMonitorHeader: React.FC<ScreenMonitorHeaderProps> = ({
       <div className="flex items-center ml-0 md:ml-6 mt-4 md:mt-0 justify-end">
         {hasPermission ? (
           <Space>
+            <Button
+              type="outline"
+              size="large"
+              onClick={onCaptureNow}
+              className="[&_.arco-btn]: !bg-white [&_.arco-btn]: !border-gray-300 [&_.arco-btn]: !text-black [&_.arco-btn:hover]: !bg-gray-50">
+              Capture Now
+            </Button>
+            {failedCount > 0 && (
+              <Button
+                type="outline"
+                size="large"
+                status="warning"
+                onClick={onRetryFailure}
+                className="[&_.arco-btn]: !border-amber-500 [&_.arco-btn]: !text-amber-700">
+                Retry Failed ({failedCount})
+              </Button>
+            )}
             <Popover content="Settings can only be adjusted after Stop Recording." disabled={!isMonitoring}>
               <Button
                 type="outline"

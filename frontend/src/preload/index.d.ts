@@ -35,6 +35,11 @@ declare global {
       getVisibleSources: () => Promise<any[]>
       deleteScreenshot: (filePath: string) => Promise<{ success: boolean; error?: string }>
       readImageAsBase64: (filePath: string) => Promise<{ success: boolean; data?: string; error?: string }>
+      takeScreenshot: (
+        groupIntervalTime: string,
+        sourceId: string
+      ) => Promise<{ success: boolean; screenshotInfo?: { url: string; sourceId: string }; error?: string }>
+      getActiveWindowSource: () => Promise<{ success: boolean; source?: any; error?: string }>
     }
     fileService: {
       saveFile: (fileName: string, fileData: Uint8Array) => Promise<any>

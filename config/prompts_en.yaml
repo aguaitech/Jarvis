@@ -1276,6 +1276,7 @@ generation:
       - **Content Interaction**: What content is the user viewing, editing, or processing
       - **Goal Behavior**: What goals does the user seem to want to achieve
       - **Activity Pattern**: Whether user's behavior has specific patterns or focuses
+      - **Capture Types**: Each context may include `capture_type` (full_display or active_window) and `window_title`. Use `active_window` as the primary signal for intent; use `full_display` to detect surrounding noise or supporting apps.
 
       **JSON Output Field Specifications**:
       1. **title field** (required, string type):

@@ -37,14 +37,14 @@ import { IpcServerPushChannel } from '@shared/ipc-server-push-channel'
 import { VaultDocumentType } from '@shared/enums/global-enum'
 import { getTrayService } from './index'
 import { type Dayjs } from 'dayjs'
-import AppUpdater from './services/AppUpdater'
+// import AppUpdater from './services/AppUpdater'
 import { HeatmapService } from './services/HeatmapService'
 
 const logger = getLogger('IPC')
 
 export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   const notificationService = new NotificationService(mainWindow)
-  const appUpdater = new AppUpdater(mainWindow)
+  // const appUpdater = new AppUpdater(mainWindow)
 
   // Backend 服务相关
   // ipcMain.handle(IpcChannel.Backend_GetPort, () => {
@@ -494,7 +494,8 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
     screenshotService.openPrefs()
   })
 
-  ipcMain.handle(IpcChannel.Screen_Monitor_Take_Screenshot, (_, sourceId: string, batchTime: Dayjs) =>
+  // Note: renderer sends (batchTime, sourceId)
+  ipcMain.handle(IpcChannel.Screen_Monitor_Take_Screenshot, (_, batchTime: Dayjs, sourceId: string) =>
     screenshotService.takeScreenshot(sourceId, batchTime)
   )
 
@@ -503,6 +504,7 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   )
 
   ipcMain.handle(IpcChannel.Screen_Monitor_Get_Visible_Sources, () => screenshotService.getVisibleSources())
+  ipcMain.handle(IpcChannel.Screen_Monitor_Get_Active_Window_Source, () => screenshotService.getActiveWindowSource())
 
   ipcMain.handle(IpcChannel.Screen_Monitor_Delete_Screenshot, (_, filePath: string) =>
     screenshotService.deleteScreenshot(filePath)

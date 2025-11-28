@@ -10,10 +10,12 @@ Screenshot capture component for periodic screen capturing
 """
 
 import os
+import platform
+import subprocess
 import threading
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from PIL import Image
 
@@ -197,6 +199,10 @@ class ScreenshotCapture(BaseCaptureComponent):
             "screenshot_format": screenshot_format,
             "screenshot_path": screenshot_path,
             "duration_count": 1,  # Initial count
+            "capture_type": details.get("capture_type", "full_display"),
+            "window_title": details.get("window_title"),
+            "source_app": details.get("app_name"),
+            "window_region": details.get("window_region"),
         }
         metadata.update(details)
         metadata["tags"] = [
@@ -285,8 +291,17 @@ class ScreenshotCapture(BaseCaptureComponent):
                             img.save(buffer, format="PNG")
                             format_name = "png"
 
-                        details = {"monitor": f"monitor_{i+1}", "coordinates": monitor}
+                        details = {
+                            "monitor": f"monitor_{i+1}",
+                            "coordinates": monitor,
+                            "capture_type": "full_display",
+                        }
                         screenshots.append((buffer.getvalue(), format_name, details))
+
+                    # Try capturing the active window (macOS only for now)
+                    active_capture = self._capture_active_window(sct)
+                    if active_capture:
+                        screenshots.append(active_capture)
 
             else:
                 logger.error(f"Unsupported screenshot library: {self._screenshot_lib}")
@@ -296,6 +311,63 @@ class ScreenshotCapture(BaseCaptureComponent):
         except Exception as e:
             logger.exception(f"Screenshot failed: {str(e)}")
             return []
+
+    def _capture_active_window(self, sct) -> Optional[tuple]:
+        """
+        Capture the active window on macOS. Returns tuple like other screenshots:
+        (screenshot_bytes, format, details_dict)
+        """
+        if platform.system().lower() != "darwin":
+            return None
+
+        try:
+            script = r'''
+                tell application "System Events"
+                    set frontApp to first application process whose frontmost is true
+                    set appName to name of frontApp
+                    if (count of windows of frontApp) is 0 then
+                        return ""
+                    end if
+                    set win to front window of frontApp
+                    set winName to name of win
+                    set winPos to position of win
+                    set winSize to size of win
+                    return appName & "||" & winName & "||" & (item 1 of winPos as text) & "," & (item 2 of winPos as text) & "," & (item 1 of winSize as text) & "," & (item 2 of winSize as text)
+                end tell
+            '''
+            raw_output = subprocess.check_output(["osascript", "-e", script], text=True).strip()
+            if not raw_output:
+                return None
+            app_name, window_title, geom = raw_output.split("||")
+            left, top, width, height = map(int, geom.split(","))
+            if width <= 0 or height <= 0:
+                return None
+
+            region = {"left": left, "top": top, "width": width, "height": height}
+            sct_img = sct.grab(region)
+            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            buffer = BytesIO()
+            if self._screenshot_format in ["jpg", "jpeg"]:
+                img.save(buffer, format="JPEG", quality=self._screenshot_quality)
+                format_name = "jpeg"
+            else:
+                img.save(buffer, format="PNG")
+                format_name = "png"
+            screenshot_bytes = buffer.getvalue()
+            return (
+                screenshot_bytes,
+                format_name,
+                {
+                    "monitor": "active_window",
+                    "capture_type": "active_window",
+                    "window_title": f"{app_name} - {window_title}",
+                    "app_name": app_name,
+                    "window_region": region,
+                },
+            )
+        except Exception as e:
+            logger.debug(f"Active window capture failed: {e}")
+            return None
 
     def _get_config_schema_impl(self) -> Dict[str, Any]:
         """

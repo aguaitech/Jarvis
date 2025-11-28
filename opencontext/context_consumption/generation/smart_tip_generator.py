@@ -215,8 +215,17 @@ class SmartTipGenerator:
             for context_type, context_list in all_contexts.items():
                 contexts.extend(context_list)
 
-            # Sort by time, with the newest first
-            contexts.sort(key=lambda x: x.properties.create_time, reverse=True)
+            # Sort by time, with the newest first. Normalize to timestamps to avoid naive/aware comparison errors.
+            def _ctx_ts(ctx):
+                ct = ctx.properties.create_time
+                if ct is None:
+                    return 0
+                # If timezone is missing, assume UTC to keep ordering consistent
+                if ct.tzinfo is None:
+                    ct = ct.replace(tzinfo=datetime.timezone.utc)
+                return ct.timestamp()
+
+            contexts.sort(key=_ctx_ts, reverse=True)
 
             return contexts
 

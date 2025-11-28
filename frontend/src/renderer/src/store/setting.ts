@@ -8,6 +8,7 @@ export interface ScreenSettings {
   enableRecordingHours: boolean
   recordingHours: [string, string]
   applyToDays: 'weekday' | 'everyday'
+  maxConcurrentCaptures: number
 }
 
 const initialState = {
@@ -15,7 +16,8 @@ const initialState = {
     recordInterval: 15,
     enableRecordingHours: false,
     recordingHours: ['08:00:00', '20:00:00'],
-    applyToDays: 'weekday'
+    applyToDays: 'weekday',
+    maxConcurrentCaptures: 1
   }
   // other settings...
 }

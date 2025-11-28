@@ -1,21 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { Modal, Image, Form, Message } from '@arco-design/web-react'
+import { Modal, Image, Form, Message, Tag } from '@arco-design/web-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSetting } from '@renderer/hooks/use-setting'
 import { useScreen } from '@renderer/hooks/use-screen'
 import dayjs from 'dayjs'
 
 import { useMemoizedFn, useMount } from 'ahooks'
-import {
-  appStore,
-  loadableCaptureSourcesAtom,
-  loadableCaptureSourcesFromSettingsAtom,
-  refreshCaptureSourcesAtom,
-  refreshCaptureSourcesFromSettingsAtom
-} from '@renderer/atom/capture.atom'
-import { get } from 'lodash'
+import { appStore, loadableCaptureSourcesAtom } from '@renderer/atom/capture.atom'
 import { useAtomValue } from 'jotai'
 import { useObservableTask } from '@renderer/atom/event-loop.atom'
+import { Progress, Alert } from '@arco-design/web-react'
 // Extracted components
 import ScreenMonitorHeader from './components/screen-monitor-header'
 import DateNavigation from './components/date-navigation'
@@ -26,6 +20,10 @@ import { getLogger } from '@shared/logger/renderer'
 import { IpcChannel } from '@shared/IpcChannel'
 import type { RecordingStats } from './components/recording-stats-card'
 import { CaptureSource } from '@interface/common/source'
+import { pathToFileURL } from '@renderer/utils/file'
+import classNames from 'classnames'
+import { Button } from '@arco-design/web-react'
+import axiosInstance from '@renderer/services/axiosConfig'
 
 const logger = getLogger('ScreenMonitor')
 
@@ -50,10 +48,12 @@ const ScreenMonitor: React.FC = () => {
     recordingHours,
     enableRecordingHours,
     applyToDays,
+    maxConcurrentCaptures,
     setRecordInterval,
     setEnableRecordingHours,
     setRecordingHours,
-    setApplyToDays
+    setApplyToDays,
+    setMaxConcurrentCaptures
   } = useSetting()
   const {
     currentSession,
@@ -62,7 +62,9 @@ const ScreenMonitor: React.FC = () => {
     selectedImage,
     setSelectedImage,
     getNewActivities,
-    getActivitiesByDate
+    getActivitiesByDate,
+    captureScreenshot,
+    isProgressing
   } = useScreen()
   const [isMonitoring, setIsMonitoring] = useState(false)
   useMount(() => {
@@ -83,10 +85,24 @@ const ScreenMonitor: React.FC = () => {
 
   const [currentDate, setCurrentDate] = useState(dayjs().toDate())
   const isToday = dayjs(currentDate).isSame(dayjs(), 'day')
-  const screenshots = currentSession?.screenshots || {}
-  const [settingsVisible, setSettingsVisible] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])
   const [recordingStats, setRecordingStats] = useState<RecordingStats | null>(null)
+  const screenshots = currentSession?.screenshots || {}
+  const allScreenshots = useMemo(() => Object.values(screenshots).flat(), [screenshots])
+  const assignedScreenshotPaths = useMemo(() => {
+    const set = new Set<string>()
+    activities.forEach((activity) => {
+      (activity.resources || [])
+        .filter((r) => r.type === 'image' && r.path)
+        .forEach((r) => set.add(r.path))
+    })
+    return set
+  }, [activities])
+  const unassignedScreenshots = useMemo(
+    () => allScreenshots.filter((shot) => !assignedScreenshotPaths.has(shot.image_url)),
+    [allScreenshots, assignedScreenshotPaths]
+  )
+  const [settingsVisible, setSettingsVisible] = useState(false)
   const activityPollingRef = useRef<NodeJS.Timeout | null>(null)
   const statsPollingRef = useRef<NodeJS.Timeout | null>(null)
   const lastCheckedTimeRef = useRef<string>(
@@ -101,11 +117,8 @@ const ScreenMonitor: React.FC = () => {
   const [tempEnableRecordingHours, setTempEnableRecordingHours] = useState(enableRecordingHours)
   const [tempRecordingHours, setTempRecordingHours] = useState<[string, string]>(recordingHours as [string, string])
   const [tempApplyToDays, setTempApplyToDays] = useState(applyToDays)
-
-  // Refresh the application list and trigger a re-render
-  const refreshSourcesRead = useMemoizedFn(async () => {
-    await appStore.set(refreshCaptureSourcesAtom)
-  })
+  const [tempMaxConcurrentCaptures, setTempMaxConcurrentCaptures] = useState(maxConcurrentCaptures)
+  const [captureFailures, setCaptureFailures] = useState<CaptureSource[]>([])
 
   useEffect(() => {
     const initActivities = async () => {
@@ -132,18 +145,16 @@ const ScreenMonitor: React.FC = () => {
 
   // Manage polling when date or monitoring status changes
   useEffect(() => {
-    if (isMonitoring) {
-      if (isToday) {
-        // If switched to today and monitoring, start polling
-        startActivityPolling()
+    if (isToday) {
+      // Always keep activity polling for today so the list refreshes even after stopping recording
+      startActivityPolling()
+      if (isMonitoring) {
         startStatsPolling()
       } else {
-        // If switched to historical date, stop polling
-        stopActivityPolling()
         stopStatsPolling()
       }
     } else {
-      // If not monitoring, stop all polling
+      // Historical date: no live polling
       stopActivityPolling()
       stopStatsPolling()
     }
@@ -170,6 +181,21 @@ const ScreenMonitor: React.FC = () => {
 
   // Start monitoring session
   const startMonitoring = useMemoizedFn(async () => {
+    const defaultSources: CaptureSource[] = []
+    if (screenAllSources.length) {
+      defaultSources.push(screenAllSources[0])
+    }
+    try {
+      const active = await window.screenMonitorAPI.getActiveWindowSource()
+      if (active?.success && active.source) {
+        defaultSources.push(active.source as CaptureSource)
+      }
+    } catch (err) {
+      logger.debug('Failed to fetch active window source for auto capture', { err })
+    }
+    if (defaultSources.length) {
+      await window.screenMonitorAPI.updateCurrentRecordApp(defaultSources as CaptureSource[])
+    }
     await window.screenMonitorAPI.updateModelConfig({
       recordInterval,
       recordingHours,
@@ -187,7 +213,7 @@ const ScreenMonitor: React.FC = () => {
   const stopMonitoring = useMemoizedFn(async () => {
     if (isMonitoring) {
       await window.screenMonitorAPI.stopTask()
-      stopActivityPolling()
+      // Keep activity polling running so the list shows the final screenshots/activities
       stopStatsPolling()
     }
   })
@@ -366,20 +392,18 @@ const ScreenMonitor: React.FC = () => {
     // Refresh the application list before opening settings
     try {
       setSettingsVisible(true)
-      await refreshSourcesRead()
     } catch (error) {
       logger.error('Failed to refresh application list', { error })
     }
   })
-  const [applicationVisible, setApplicationVisible] = useState(false)
 
   const handleCancelSettings = useMemoizedFn(() => {
     setTempRecordInterval(recordInterval)
     setTempEnableRecordingHours(enableRecordingHours)
     setTempRecordingHours(recordingHours as [string, string])
     setTempApplyToDays(applyToDays)
+    setTempMaxConcurrentCaptures(maxConcurrentCaptures)
     setSettingsVisible(false)
-    setApplicationVisible(false)
   })
 
   const handleSaveSettings = useMemoizedFn(() => {
@@ -387,6 +411,7 @@ const ScreenMonitor: React.FC = () => {
     setEnableRecordingHours(tempEnableRecordingHours)
     setRecordingHours(tempRecordingHours as [string, string])
     setApplyToDays(tempApplyToDays as 'weekday' | 'everyday')
+    setMaxConcurrentCaptures(tempMaxConcurrentCaptures)
     setSettingsVisible(false)
   })
 
@@ -431,62 +456,104 @@ const ScreenMonitor: React.FC = () => {
   }, [isMonitoring, canRecord, isToday])
 
   // Get sources
-  const settingSources = useAtomValue(loadableCaptureSourcesFromSettingsAtom, { store: appStore })
-  const settingScreenSources = useMemo(
-    () => (settingSources.state === 'hasData' ? get(settingSources, 'data.screenSources') : ([] as CaptureSource[])),
-    [settingSources]
-  )
-  const settingWindowSources = useMemo(
-    () => (settingSources.state === 'hasData' ? get(settingSources, 'data.appSources') : ([] as CaptureSource[])),
-    [settingSources]
-  )
   const [form] = Form.useForm<{ screenSources?: string[]; windowSources?: string[] }>()
   const entry = useMemoizedFn(async () => {
-    const screenIds = settingScreenSources?.map((v) => v.id) || []
-    const windowIds = settingWindowSources?.map((v) => v.id) || []
-    const screenList = screenAllSources?.filter((source) => screenIds?.includes(source.id)) || []
-    const windowList = appAllSources?.filter((source) => windowIds?.includes(source.id)) || []
-    const screenSources = screenList.map((source) => source.id)
-    form.setFieldsValue({
-      screenSources: screenSources.length > 0 ? screenSources : [get(screenAllSources[0], 'id')].filter(Boolean),
-      windowSources: windowList.map((source) => source.id)
-    })
-    await window.screenMonitorAPI.updateCurrentRecordApp([
-      ...(screenList.length > 0 ? screenList : [get(screenAllSources, 0)].filter(Boolean)),
-      ...windowList
-    ])
+    form.setFieldsValue({})
   })
 
   // Tips: The biggest problem with using Form for management is that when the user does not select any screen or window, it will cause the save to fail
   const handleSave = useMemoizedFn(async () => {
-    const values = form.getFieldsValue()
-    if (![...(values.screenSources || []), ...(values.windowSources || [])].length) {
-      Message.info('Please select at least one screen or window')
-      return
-    }
-    const screenList = screenAllSources?.filter((source) => values.screenSources?.includes(source.id)) || []
-    const windowList = appAllSources?.filter((source) => values.windowSources?.includes(source.id)) || []
-    await window.screenMonitorAPI.setSettings('settings', {
-      screenList,
-      windowList
-    })
-    await window.screenMonitorAPI.updateCurrentRecordApp([...screenList, ...windowList])
     handleSaveSettings()
-    await appStore.set(refreshCaptureSourcesFromSettingsAtom)
   })
 
   useEffect(() => {
-    if (settingSources.state === 'hasData' && sources.state === 'hasData') {
-      entry()
-      setTempRecordInterval(recordInterval)
-      setTempEnableRecordingHours(enableRecordingHours)
-      setTempRecordingHours(recordingHours as [string, string])
-      setTempApplyToDays(applyToDays)
-    }
-  }, [settingSources, sources])
+    entry()
+    setTempRecordInterval(recordInterval)
+    setTempEnableRecordingHours(enableRecordingHours)
+    setTempRecordingHours(recordingHours as [string, string])
+    setTempApplyToDays(applyToDays)
+    setTempMaxConcurrentCaptures(maxConcurrentCaptures)
+  }, [sources])
 
   const handleRequestPermission = useMemoizedFn(async () => {
     await grantPermission()
+  })
+
+  const mergedSources = useMemo(() => {
+    // Only use the primary available screen for manual capture
+    return screenAllSources?.length ? [screenAllSources[0]] : []
+  }, [screenAllSources])
+
+  const handleCaptureNow = useMemoizedFn(async () => {
+    try {
+      // Prefer fresh sources from main to avoid stale IDs
+      let sourcesToUse: CaptureSource[] = mergedSources
+      try {
+        const fresh = await window.screenMonitorAPI.getCaptureAllSources()
+        if (fresh?.screenSources) {
+          const freshScreens = (fresh.screenSources || []).filter((src: any) => src?.isVisible)
+          if (freshScreens.length) {
+            sourcesToUse = [freshScreens[0]] as CaptureSource[]
+          }
+        }
+      } catch (err) {
+        logger.debug('Failed to refresh capture sources, using cached list', { err })
+      }
+
+      // Only capture the first available screen
+      const firstSource = sourcesToUse.length ? [sourcesToUse[0]] : []
+      if (!firstSource.length) {
+        Message.error('No screen source available to capture')
+        setLastCaptureFailed(true)
+        return
+      }
+
+      const results = await captureScreenshot(firstSource, maxConcurrentCaptures)
+      const failures = (results || []).filter((r) => !r.success).map((r) => r.source)
+      setCaptureFailures(failures as CaptureSource[])
+
+      Message.success('Captured now and sent for processing')
+      if (failures.length === 0) {
+        setCaptureFailures([])
+      }
+    } catch (error) {
+      logger.error('Manual capture failed', { error })
+      setCaptureFailures(mergedSources)
+      Message.error('Manual capture failed, please retry')
+    }
+  })
+
+  const handleRetryCapture = useMemoizedFn(async (sources?: CaptureSource[]) => {
+    const retryTargets = sources && sources.length > 0 ? sources : captureFailures
+    if (!retryTargets.length) return
+    const results = await captureScreenshot(retryTargets, maxConcurrentCaptures)
+    const failures = (results || []).filter((r) => !r.success).map((r) => r.source)
+    setCaptureFailures(failures as CaptureSource[])
+    if (failures.length === 0) {
+      Message.success('Retry successful')
+    } else {
+      Message.warning(`${failures.length} capture(s) still failing`)
+    }
+  })
+
+  const handleRetryProcessing = useMemoizedFn(async () => {
+    try {
+      if (!unassignedScreenshots.length) {
+        Message.info('No failed screenshots to retry')
+        return
+      }
+      const payload = unassignedScreenshots.map((shot) => ({
+        path: shot.image_url,
+        window: shot.description || shot.source_id || 'Screen',
+        create_time: dayjs(shot.timestamp).toISOString(),
+        source: shot.capture_type || 'unknown'
+      }))
+      await axiosInstance.post('/api/add_screenshots', { screenshots: payload })
+      Message.success('Re-submitted failed screenshots for processing')
+    } catch (error: any) {
+      logger.error('Failed to trigger retry processing', { error })
+      Message.error('Retry processing failed')
+    }
   })
 
   return (
@@ -503,11 +570,27 @@ const ScreenMonitor: React.FC = () => {
           onStartMonitoring={startMonitoring}
           onStopMonitoring={stopMonitoring}
           onRequestPermission={handleRequestPermission}
+          onCaptureNow={handleCaptureNow}
+          failedCount={captureFailures.length}
+          onRetryFailure={handleRetryCapture}
         />
 
         {/* Recording area */}
         <div className="w-full mb-0 mx-auto flex-1 flex flex-col">
           <div className="border-2 border-dashed border-gray-300 rounded-[12px] p-[30px] bg-gray-50 transition-all duration-300 flex-1 flex flex-col overflow-auto">
+            {isProgressing && (
+              <Alert
+                type="info"
+                showIcon
+                content={
+                  <div className="flex items-center gap-3">
+                    <span>Processing screenshots with LLM…</span>
+                    <Progress percent={100} status="active" showText={false} />
+                  </div>
+                }
+                className="mb-4"
+              />
+            )}
             <DateNavigation
               hasPermission={hasPermission}
               currentDate={currentDate}
@@ -525,6 +608,8 @@ const ScreenMonitor: React.FC = () => {
                 canRecord={canRecord}
                 activities={activities}
                 recordingStats={recordingStats}
+                failedSources={captureFailures}
+                onRetryFailed={handleRetryProcessing}
               />
             ) : (
               <EmptyStatePlaceholder
@@ -532,6 +617,58 @@ const ScreenMonitor: React.FC = () => {
                 isToday={isToday}
                 onGrantPermission={grantPermission}
               />
+            )}
+
+            {allScreenshots.length > 0 && (
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-semibold text-sm text-black">Captured screenshots</span>
+                  {!isMonitoring && <Tag color="orange">Recording stopped</Tag>}
+                  {unassignedScreenshots.length > 0 && (
+                    <Tag color="arcoblue">{unassignedScreenshots.length} unassigned</Tag>
+                  )}
+                  {captureFailures.length > 0 && (
+                    <Button type="secondary" size="mini" status="warning" onClick={() => handleRetryCapture()}>
+                      Retry failed ({captureFailures.length})
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-col gap-4">
+                  <Image.PreviewGroup infinite>
+                    {Object.entries(screenshots).map(([groupKey, groupShots]) => {
+                      const full = groupShots.find((s) => s.capture_type === 'full_display') || groupShots[0]
+                      const active = groupShots.find((s) => s.capture_type === 'active_window')
+                      return (
+                        <div key={groupKey} className="relative w-full max-w-3xl">
+                          {full && (
+                            <Image
+                              src={full.base64_url || pathToFileURL(full.image_url)}
+                              alt={full.description || 'Display'}
+                              width="100%"
+                              height={220}
+                              className="rounded-[12px] object-cover"
+                            />
+                          )}
+                          {active && (
+                            <div className="absolute bottom-3 right-3 shadow-lg border border-white rounded-[10px] overflow-hidden bg-white">
+                              <Image
+                                src={active.base64_url || pathToFileURL(active.image_url)}
+                                alt={active.description || 'Active window'}
+                                width={200}
+                                height={120}
+                                className={classNames('object-cover', 'rounded-[10px]')}
+                              />
+                              <div className="px-2 py-1 text-[10px] text-gray-700 bg-white border-t border-gray-100">
+                                Active window
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </Image.PreviewGroup>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -550,21 +687,18 @@ const ScreenMonitor: React.FC = () => {
         <SettingsModal
           visible={settingsVisible}
           form={form}
-          sources={sources}
-          screenAllSources={screenAllSources}
-          appAllSources={appAllSources}
-          applicationVisible={applicationVisible}
           tempRecordInterval={tempRecordInterval}
           tempEnableRecordingHours={tempEnableRecordingHours}
           tempRecordingHours={tempRecordingHours}
           tempApplyToDays={tempApplyToDays}
+          tempMaxConcurrentCaptures={tempMaxConcurrentCaptures}
           onCancel={handleCancelSettings}
           onSave={handleSave}
-          onSetApplicationVisible={setApplicationVisible}
           onSetTempRecordInterval={setTempRecordInterval}
           onSetTempEnableRecordingHours={setTempEnableRecordingHours}
           onSetTempRecordingHours={setTempRecordingHours}
           onSetTempApplyToDays={setTempApplyToDays}
+          onSetTempMaxConcurrentCaptures={setTempMaxConcurrentCaptures}
         />
       </div>
     </div>

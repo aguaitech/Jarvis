@@ -12,7 +12,7 @@ interface ScreenMonitorAPI {
     sourceId: string
   ) => Promise<{
     success: boolean
-    screenshotInfo?: { url: string; date: string; timestamp: number }
+    screenshotInfo?: { url: string; date?: string; timestamp?: number; sourceId: string }
     error?: string
   }>
   getVisibleSources: (ids?: string[]) => Promise<{ success: boolean; sources?: any[]; error?: string }>
@@ -41,6 +41,11 @@ interface ScreenMonitorAPI {
   getCaptureAllSources: (thumbnailSize?: { width: number; height: number }) => Promise<{
     success: boolean
     sources?: any[]
+    error?: string
+  }>
+  getActiveWindowSource: () => Promise<{
+    success: boolean
+    source?: CaptureSource
     error?: string
   }>
   getSettings: <T>(key: string) => Promise<T>

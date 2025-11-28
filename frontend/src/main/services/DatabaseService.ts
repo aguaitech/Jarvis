@@ -95,12 +95,17 @@ class DatabaseManager extends VaultDatabaseService {
 
   private ensureTablesExist() {
     try {
-      // Check if the table exists
-      const tableExists = this.db!.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='vaults'").get()
-
-      if (!tableExists) {
-        logger.info('📊 Creating vaults table for the first time...')
-        // this.createVaultsTable()
+      const hasActivity = this.db!
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='activity'")
+        .get()
+      if (!hasActivity) {
+        logger.info('📊 Creating activity table for the first time...')
+        this.createActivityTable()
+      }
+      const hasTodo = this.db!.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='todo'").get()
+      if (!hasTodo) {
+        logger.info('📊 Creating todo table for the first time...')
+        this.createTodoTable()
       }
     } catch (error) {
       logger.error('❌ Failed to ensure tables exist:', error)
@@ -137,42 +142,42 @@ class DatabaseManager extends VaultDatabaseService {
   //   logger.info('✅ Vaults table created successfully')
   // }
 
-  // private createTodoTable() {
-  //   this.db!.exec(`
-  //     CREATE TABLE todo (
-  //       id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //       content TEXT,
-  //       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //       start_time DATETIME,
-  //       end_time DATETIME,
-  //       status INTEGER DEFAULT 0,
-  //       urgency INTEGER DEFAULT 0
-  //     );
-  //   `)
-  //   this.db!.exec(`
-  //     CREATE INDEX IF NOT EXISTS idx_todo_status ON todo(status);
-  //     CREATE INDEX IF NOT EXISTS idx_todo_urgency ON todo(urgency);
-  //   `)
-  //   logger.info('✅ Todo table created successfully')
-  // }
+  private createTodoTable() {
+    this.db!.exec(`
+      CREATE TABLE IF NOT EXISTS todo (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        start_time DATETIME,
+        end_time DATETIME,
+        status INTEGER DEFAULT 0,
+        urgency INTEGER DEFAULT 0
+      );
+    `)
+    this.db!.exec(`
+      CREATE INDEX IF NOT EXISTS idx_todo_status ON todo(status);
+      CREATE INDEX IF NOT EXISTS idx_todo_urgency ON todo(urgency);
+    `)
+    logger.info('✅ Todo table created successfully')
+  }
 
-  // private createActivityTable() {
-  //   this.db!.exec(`
-  //     CREATE TABLE activity (
-  //       id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //       title TEXT,
-  //       content TEXT,
-  //       resources JSON,
-  //       start_time DATETIME,
-  //       end_time DATETIME
-  //     );
-  //   `)
-  //   this.db!.exec(`
-  //     CREATE INDEX IF NOT EXISTS idx_activity_status ON activity(title);
-  //     CREATE INDEX IF NOT EXISTS idx_activity_urgency ON activity(start_time);
-  //   `)
-  //   logger.info('✅ Activity table created successfully')
-  // }
+  private createActivityTable() {
+    this.db!.exec(`
+      CREATE TABLE IF NOT EXISTS activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        content TEXT,
+        resources JSON,
+        start_time DATETIME,
+        end_time DATETIME
+      );
+    `)
+    this.db!.exec(`
+      CREATE INDEX IF NOT EXISTS idx_activity_title ON activity(title);
+      CREATE INDEX IF NOT EXISTS idx_activity_start_time ON activity(start_time);
+    `)
+    logger.info('✅ Activity table created successfully')
+  }
 
   // private createTipsTable() {
   //   this.db!.exec(`

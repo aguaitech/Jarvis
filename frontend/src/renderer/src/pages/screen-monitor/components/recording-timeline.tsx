@@ -6,6 +6,7 @@ import { formatTime } from '@renderer/utils/time'
 import { SCREEN_INTERVAL_TIME } from '../constant'
 import RecordingStatsCard, { RecordingStats } from './recording-stats-card'
 import dayjs from 'dayjs'
+import { CaptureSource } from '@interface/common/source'
 
 const { Text } = Typography
 const TimelineItem = Timeline.Item
@@ -16,6 +17,8 @@ interface RecordingTimelineProps {
   canRecord: boolean
   activities: Activity[]
   recordingStats: RecordingStats | null
+  failedSources?: CaptureSource[]
+  onRetryFailed?: (sources?: CaptureSource[]) => void
 }
 
 const RecordingTimeline: React.FC<RecordingTimelineProps> = ({
@@ -23,7 +26,9 @@ const RecordingTimeline: React.FC<RecordingTimelineProps> = ({
   isToday,
   canRecord,
   activities,
-  recordingStats
+  recordingStats,
+  failedSources = [],
+  onRetryFailed
 }) => {
   console.log('[RecordingTimeline] Props:', {
     isMonitoring,
@@ -49,7 +54,11 @@ const RecordingTimeline: React.FC<RecordingTimelineProps> = ({
                       Every {SCREEN_INTERVAL_TIME} minutes, Jarvis generates an Activity based on screen analysis.
                     </div>
                   </div>
-                  <RecordingStatsCard stats={recordingStats} />
+                  <RecordingStatsCard
+                    stats={recordingStats}
+                    failedSources={failedSources}
+                    onRetryFailed={onRetryFailed}
+                  />
                 </>
               ) : (
                 <div className="w-full text-sm">

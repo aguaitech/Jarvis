@@ -44,6 +44,93 @@ class CaptureSourcesTools {
     }
   }
 
+  /**
+   * Get the frontmost (active) window source on macOS so we can capture it directly.
+   */
+  async getActiveWindowSourceTools(): Promise<{
+    success: boolean
+    source?: CaptureSource
+    error?: string
+  }> {
+    if (process.platform !== 'darwin') {
+      return { success: false, error: 'Active window detection is only supported on macOS for now.' }
+    }
+
+    try {
+      const execAsync = promisify(exec)
+      const { stdout } = await execAsync(`osascript -e '
+        tell application "System Events"
+          set frontApp to first application process whose frontmost is true
+          set appName to name of frontApp
+          if (count of windows of frontApp) is 0 then
+            return ""
+          end if
+          set win to front window of frontApp
+          set winName to name of win
+          return appName & "||" & winName
+        end tell
+      '`)
+
+      const raw = stdout.trim()
+      if (!raw) {
+        return { success: false, error: 'No active window detected' }
+      }
+
+      const [appName, windowTitle] = raw.split('||')
+      const sources = await desktopCapturer.getSources({
+        types: ['window'],
+        thumbnailSize: { width: 1920, height: 1080 },
+        fetchWindowIcons: true
+      })
+
+      const titleLower = windowTitle.toLowerCase()
+      const appLower = appName.toLowerCase()
+      const match = sources.find((s) => {
+        const name = s.name.toLowerCase()
+        return (
+          name === titleLower ||
+          name.includes(titleLower) ||
+          name === `${appName} - ${windowTitle}`.toLowerCase() ||
+          name.includes(appLower)
+        )
+      })
+
+      if (!match) {
+        return { success: false, error: `Active window source not found for ${appName} - ${windowTitle}` }
+      }
+
+      const captureSource: CaptureSource = {
+        id: match.id,
+        name: match.name,
+        type: 'window',
+        thumbnail: match.thumbnail?.toDataURL() || null,
+        appIcon: match.appIcon ? match.appIcon.toDataURL() : null,
+        isVisible: true,
+        appName,
+        windowTitle
+      }
+
+      return { success: true, source: captureSource }
+    } catch (error: any) {
+      const msg: string = error?.message || ''
+      const isAccessibilityDenied =
+        msg.includes('不允许辅助访问') ||
+        msg.includes('-25211') ||
+        msg.toLowerCase().includes('accessibility') ||
+        msg.toLowerCase().includes('assistive')
+
+      if (isAccessibilityDenied) {
+        logger.warn(
+          'Active window capture requires Accessibility permission (System Settings > Privacy & Security > Accessibility). Falling back to full-display only.'
+        )
+        return { success: false, error: 'Accessibility permission required for active window capture' }
+      }
+
+      logger.error('Failed to resolve active window source:', error)
+      return { success: false, error: msg }
+    }
+  }
+
   async getCaptureSourcesTools() {
     try {
       const sources = await desktopCapturer.getSources({

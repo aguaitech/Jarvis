@@ -69,7 +69,10 @@ const navigationSlice = createSlice({
           case '/screen-monitor':
             state.activeMainTab = 'screen-monitor'
             break
-          case '/settings': // Add this line to handle the settings path
+          case '/providers':
+            state.activeMainTab = 'providers'
+            break
+          case '/settings':
             state.activeMainTab = 'settings'
             break
           default:

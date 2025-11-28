@@ -4,12 +4,14 @@
 // import '@renderer/databases'
 
 import { FC, useEffect, useMemo } from 'react'
-import { HashRouter, Route, Routes, useNavigate } from 'react-router-dom'
+import { HashRouter, Route, Routes, useNavigate, useLocation } from 'react-router-dom'
+import axiosInstance from './services/axiosConfig'
 
 import HomePage from './pages/home/home-page'
 import VaultPage from './pages/vault/Vault'
 import ScreenMonitor from './pages/screen-monitor/screen-monitor'
-import Settings from './pages/settings/settings'
+import Providers from './pages/settings/settings'
+import AppSettings from './pages/app-settings/app-settings'
 
 import Files from './pages/files/Files'
 import AIDemo from './pages/ai-demo/ai-demo'
@@ -21,6 +23,7 @@ import { IpcServerPushChannel } from '@shared/ipc-server-push-channel'
 
 const AppContent: FC = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { startPolling, stopPolling } = useEvents()
   useObservableTask({
     active: startPolling,
@@ -63,13 +66,62 @@ const AppContent: FC = () => {
     return () => stopPolling()
   }, [])
 
+  // Restore last route on hot reload (fallback to /)
+  // Restore route and skip setup page if model already configured
+  useEffect(() => {
+    const init = async () => {
+      let hasModel = false
+      try {
+        const res = await axiosInstance.get('/api/model_settings/get')
+        const cfg = res?.data?.data?.config || {}
+        hasModel = !!(cfg.modelId || cfg.model || cfg.modelPlatform)
+      } catch (e) {
+        // ignore fetch error
+      }
+
+      const lastRoute = sessionStorage.getItem('jarvis:lastRoute') || localStorage.getItem('jarvis:lastRoute')
+
+      // Routing rules:
+      // - If model is configured, prefer lastRoute or home
+      // - If not configured, stay on current route (likely setup/providers)
+      let target: string | null = null
+      if (hasModel) {
+        if (lastRoute) {
+          target = lastRoute
+        } else {
+          target = '/'
+        }
+      } else {
+        target = lastRoute || location.pathname
+      }
+
+      if (target && target !== location.pathname) {
+        navigate(target)
+      }
+      // Persist the resolved route
+      const fullRoute = target || location.pathname + location.search + location.hash
+      sessionStorage.setItem('jarvis:lastRoute', fullRoute)
+      localStorage.setItem('jarvis:lastRoute', fullRoute)
+    }
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist current route
+  useEffect(() => {
+    const fullRoute = location.pathname + location.search + location.hash
+    sessionStorage.setItem('jarvis:lastRoute', fullRoute)
+    localStorage.setItem('jarvis:lastRoute', fullRoute)
+  }, [location])
+
   const routes = useMemo(() => {
     return (
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/vault" element={<VaultPage />} />
         <Route path="/screen-monitor" element={<ScreenMonitor />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/providers" element={<Providers />} />
+        <Route path="/settings" element={<AppSettings />} />
         <Route path="/files" element={<Files />} />
         <Route path="/ai-demo" element={<AIDemo />} />
       </Routes>

@@ -107,7 +107,9 @@ async function checkBackendHealth() {
           res.on('end', () => {
             if (res.statusCode === 200) {
               logToBackendFile(`Health check response: ${data}`)
-              resolve(data)
+              setTimeout(() => {
+                resolve(data)
+              }, 5000)
             } else {
               reject(new Error(`Health check failed with status: ${res.statusCode}, response: ${data}`))
             }
@@ -207,6 +209,10 @@ export function logToBackendFile(message) {
 }
 
 export function stopBackendServer() {
+  if (actuallyDev && !serverRunInFrontend) {
+    logToBackendFile('Development mode with external backend: skipping backend stop.')
+    return
+  }
   if (backendProcess) {
     logToBackendFile('Stopping backend server...')
     setBackendStatus('stopped')
@@ -628,6 +634,10 @@ export async function startBackendInBackground(mainWindow: BrowserWindow) {
 
 // 同步停止后端服务器（用于应用退出时）
 export function stopBackendServerSync() {
+  if (actuallyDev && !serverRunInFrontend) {
+    logToBackendFile('Development mode with external backend: skipping backend stop (sync).')
+    return
+  }
   logToBackendFile('Synchronously stopping backend server...')
 
   if (backendProcess) {

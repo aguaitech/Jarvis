@@ -80,6 +80,8 @@ export const captureScreenshotThunk =
         base64_url: `data:image/png;base64,${imageBase64.data}`,
         image_url: result.screenshotInfo.url,
         description: '自动截图',
+        source_id: result.screenshotInfo.sourceId,
+        capture_type: sourceId.includes('screen') ? 'full_display' : 'active_window',
         group_id: groupTimestamp // 添加分组ID
       }
 

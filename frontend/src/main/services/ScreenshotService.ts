@@ -51,60 +51,54 @@ class ScreenshotService extends CaptureSourcesTools {
    */
   async takeScreenshot(
     sourceId: string,
-    batchTime: Dayjs
+    batchTime?: Dayjs | number | string
     // groupIntervalTime?: string,
-  ): Promise<{ success: boolean; screenshotInfo?: { url: string }; error?: string }> {
+  ): Promise<{ success: boolean; screenshotInfo?: { url: string; sourceId: string }; error?: string }> {
     try {
       const res = await this.takeSourceScreenshotTools(sourceId)
+      let image: Buffer | null = null
+      let appName = get(res, 'source.sourceName', sourceId.split(':').join('-'))
+
       if (res.success) {
         const source = res.source as any
-        const thumbnail = source.thumbnail
-        if (!thumbnail || thumbnail.isEmpty()) {
+        const thumbnail = source?.thumbnail
+        if (thumbnail && !thumbnail.isEmpty()) {
+          image = thumbnail.toPNG()
+        } else {
           logger.warn(`Skipping invalid thumbnail source`, source)
-          return { success: false, error: 'Invalid thumbnail source' }
         }
-
-        const image = thumbnail.toPNG()
-        if (image.length === 0) {
-          logger.info(`Thumbnail is an empty buffer: ${source.name}`)
-          return { success: false, error: 'Empty thumbnail buffer' }
-        }
-        const timestamp = batchTime || dayjs()
-        const userDataPath = app.getPath('userData')
-        const time = timestamp.format('YYYY-MM-DD')
-        const currentTime = timestamp.format('HH-mm-ss')
-        // const timestamp = dayjs().valueOf()
-        const appName = get(source, 'sourceName', sourceId.split(':').join('-'))
-        const activityPath = !isDev
-          ? path.join(userDataPath, 'Data', 'screenshot', 'activity', time, currentTime)
-          : path.join(process.cwd(), 'backend', 'screenshot', 'activity', time, currentTime)
-        console.log(activityPath)
-        await fs.promises.mkdir(activityPath, { recursive: true })
-        const filePath = path.join(
-          activityPath,
-          `${appName === sourceId.split(':').join('-') ? appName : sourceId.split(':').join('-')}-${appName}.png`
-        )
-        await fs.promises.writeFile(filePath, image)
-        // let base64 = ''
-        // try {
-        //   base64 = `data:image/png;base64,${image.toString('base64')}`
-        // } catch (error) {
-        //   logger.warn('takeScreenshot error', error)
-        // }
-
-        const screenshotInfo = {
-          url: filePath
-          // date: dateString,
-          // timestamp: timestamp
-          // base64: base64 ? base64 : null
-        }
-        // logger.info(
-        //   `[ScreenshotService] end Screenshot taken: ---***${dayjs().format('YYYY-MM-DD HH:mm:ss')}***--- ${filePath}`
-        // )
-        return { success: true, screenshotInfo }
-      } else {
-        return { success: false, error: res.error }
       }
+
+      // Fallback to full display capture if source is missing or thumbnail invalid
+      if (!image || image.length === 0) {
+        const fallback = await this.takeScreenshotOfDisplay(0)
+        if (fallback.success && fallback.source) {
+          image = fallback.source as Buffer
+          appName = 'display-fallback'
+        } else {
+          const errMsg = fallback.error || res.error || 'Unknown screenshot error'
+          return { success: false, error: errMsg }
+        }
+      }
+
+      const timestamp = dayjs(
+        typeof batchTime === 'number' || typeof batchTime === 'string'
+          ? Number(batchTime)
+          : batchTime
+      )
+      const userDataPath = app.getPath('userData')
+      const time = timestamp.format('YYYY-MM-DD')
+      const currentTime = timestamp.format('HH-mm-ss')
+      const activityPath = !isDev
+        ? path.join(userDataPath, 'Data', 'screenshot', 'activity', time, currentTime)
+        : path.join(process.cwd(), 'backend', 'screenshot', 'activity', time, currentTime)
+      await fs.promises.mkdir(activityPath, { recursive: true })
+      const safeName = appName === sourceId.split(':').join('-') ? appName : sourceId.split(':').join('-')
+      const filePath = path.join(activityPath, `${safeName}-${appName}.png`)
+      await fs.promises.writeFile(filePath, image)
+
+      const screenshotInfo = { url: filePath, sourceId }
+      return { success: true, screenshotInfo }
     } catch (error: any) {
       logger.error(`Failed to take screenshot: ${error.message}`)
       return { success: false, error: error.message }
@@ -265,6 +259,19 @@ class ScreenshotService extends CaptureSourcesTools {
       return await this.getCaptureSourcesTools()
     } catch (error: any) {
       logger.error('Failed to get capture sources:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async getActiveWindowSource(): Promise<{
+    success: boolean
+    source?: any
+    error?: string
+  }> {
+    try {
+      return await this.getActiveWindowSourceTools()
+    } catch (error: any) {
+      logger.error('Failed to get active window source:', error)
       return { success: false, error: error.message }
     }
   }

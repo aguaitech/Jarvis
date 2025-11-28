@@ -285,6 +285,7 @@ export enum IpcChannel {
   Screen_Monitor_Take_Screenshot = 'screen-monitor:take-screenshot',
   Screen_Monitor_Take_Source_Screenshot = 'screen-monitor:take-source-screenshot',
   Screen_Monitor_Get_Visible_Sources = 'screen-monitor:get-visible-sources',
+  Screen_Monitor_Get_Active_Window_Source = 'screen-monitor:get-active-window-source',
   Screen_Monitor_Delete_Screenshot = 'screen-monitor:delete-screenshot',
   Screen_Monitor_Open_Prefs = 'screen-monitor:open-prefs',
   Screen_Monitor_Read_Image_Base64 = 'screen-monitor:read-image-base64',

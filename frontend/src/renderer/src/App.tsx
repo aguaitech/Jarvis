@@ -21,6 +21,7 @@ import Settings from './pages/settings/settings'
 import { ServiceProvider, useObservableTask } from './atom/event-loop.atom'
 import { getLogger } from '@shared/logger/renderer'
 import { useMemoizedFn } from 'ahooks'
+import axiosInstance from './services/axiosConfig'
 
 const logger = getLogger('App.tsx')
 const isEnglish = true // Hardcode for now, will change later
@@ -98,6 +99,20 @@ function AppContent(): React.ReactElement {
       logger.info('Init settings data:', temp)
       setShowSettings(!temp.data.components.llm)
     })
+  }, [])
+
+  useEffect(() => {
+    const checkModelSettings = async () => {
+      try {
+        const res = await axiosInstance.get('/api/model_settings/get')
+        if (res?.status === 200 && res?.data) {
+          setShowSettings(false)
+        }
+      } catch (err) {
+        logger.debug('Model settings check skipped or failed', { err })
+      }
+    }
+    checkModelSettings()
   }, [])
 
   // Decide whether to display the application based on the status

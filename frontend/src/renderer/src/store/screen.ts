@@ -12,6 +12,8 @@ export interface ScreenshotRecord {
   timestamp: number
   base64_url?: string
   image_url: string
+  source_id?: string
+  capture_type?: 'full_display' | 'active_window' | 'other'
   description?: string
   group_id?: string // Group ID, used to identify which time group the screenshot belongs to
 }

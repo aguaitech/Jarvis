@@ -1243,6 +1243,7 @@ generation:
       - **内容互动**: 用户在查看、编辑或处理什么内容
       - **目标行为**: 用户似乎想要达成什么目标
       - **活动模式**: 用户的行为是否有特定的模式或重点
+      - **截屏类型**: 上下文中可能包含 `capture_type`（full_display 或 active_window）以及 `window_title`。优先使用 `active_window` 里的信息判断用户当前意图，用 `full_display` 辅助识别周边干扰或辅助应用。
 
       **JSON输出字段说明**:
       1. **title字段**（必填，string类型）:

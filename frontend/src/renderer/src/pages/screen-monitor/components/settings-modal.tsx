@@ -1,46 +1,37 @@
 import React from 'react'
-import { Button, Modal, Slider, TimePicker, Radio, Form, Checkbox, Spin, Switch } from '@arco-design/web-react'
-import clsx from 'clsx'
-import { Application } from './application'
-import screenIcon from '@renderer/assets/icons/screen.svg'
+import { Button, Modal, Slider, TimePicker, Radio, Form, Switch } from '@arco-design/web-react'
 interface SettingsModalProps {
   visible: boolean
   form: any
-  sources: any
-  screenAllSources: any[]
-  appAllSources: any[]
-  applicationVisible: boolean
   tempRecordInterval: number
   tempEnableRecordingHours: boolean
   tempRecordingHours: [string, string]
   tempApplyToDays: string
+  tempMaxConcurrentCaptures: number
   onCancel: () => void
   onSave: () => void
-  onSetApplicationVisible: (visible: boolean) => void
   onSetTempRecordInterval: (value: number) => void
   onSetTempEnableRecordingHours: (value: boolean) => void
   onSetTempRecordingHours: (value: [string, string]) => void
   onSetTempApplyToDays: (value: string) => void
+  onSetTempMaxConcurrentCaptures: (value: number) => void
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
   visible,
   form,
-  sources,
-  screenAllSources,
-  appAllSources,
-  applicationVisible,
   tempRecordInterval,
   tempEnableRecordingHours,
   tempRecordingHours,
   tempApplyToDays,
+  tempMaxConcurrentCaptures,
   onCancel,
   onSave,
-  onSetApplicationVisible,
   onSetTempRecordInterval,
   onSetTempEnableRecordingHours,
   onSetTempRecordingHours,
-  onSetTempApplyToDays
+  onSetTempApplyToDays,
+  onSetTempMaxConcurrentCaptures
 }) => {
   return (
     <Modal
@@ -79,22 +70,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 formatTooltip={(value) => `${value}s`}
               />
             </Form.Item>
-            <Form.Item label="Choose what to record" shouldUpdate>
-              {(values) => {
-                const { screenSources = [], windowSources = [] } = values || {}
-                const screenList = screenAllSources?.filter((source) => screenSources.includes(source.id)) || []
-                const windowList = appAllSources?.filter((source) => windowSources.includes(source.id)) || []
-                return (
-                  <Spin loading={sources.state === 'loading'} block>
-                    <Application
-                      value={[...screenList, ...windowList]}
-                      onCancel={() => onSetApplicationVisible(false)}
-                      visible={applicationVisible}
-                      onOk={() => onSetApplicationVisible(true)}
-                    />
-                  </Spin>
-                )
-              }}
+            <Form.Item label="Max concurrent captures" className="[&_.arco-form-item-label]:!text-xs">
+              <Slider
+                value={tempMaxConcurrentCaptures}
+                onChange={(value) => onSetTempMaxConcurrentCaptures(value as number)}
+                min={1}
+                max={4}
+                marks={{ 1: '1', 4: '4' }}
+                className="!mt-2"
+                formatTooltip={(value) => `${value}`}
+              />
+              <div className="text-[12px] text-[#6E718C] mt-1">
+                Control how many screenshots process in parallel. Higher values speed up multi-monitor capture.
+              </div>
+            </Form.Item>
+            <Form.Item label="Capture scope" className="[&_.arco-form-item-label]:!text-xs">
+              <div className="text-[13px] text-[#42464e] leading-[20px]">
+                Jarvis now always captures both the full display and the active window (with its title) each interval to
+                give summaries more context.
+              </div>
             </Form.Item>
             <Form.Item label="Enable recording hours" className="[&_.arco-form-item-label]:!text-xs !mb-0">
               <Switch
@@ -126,80 +120,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </Form.Item>
               </div>
             )}
-          </div>
-          <div
-            className={clsx(
-              'flex flex-col flex-1 border-l border-[#efeff4] max-h-[360px] h-[360px] overflow-x-hidden overflow-y-auto px-[16px]  [&_.arco-checkbox-checked_.arco-checkbox-mask]:!bg-[#000000] [&_.arco-checkbox-checked_.arco-checkbox-mask]:!border-[#000000]',
-              { hidden: !applicationVisible }
-            )}>
-            <div className="text-[15px] leading-[18px] text-[#42464e] mb-[12px] font-medium">Choose what to record</div>
-            <div className="[&_.arco-checkbox]:!flex [&_.arco-checkbox]:!items-center">
-              <div className="text-[14px] leading-[20px] text-[#42464e] mb-[4px]">Screen</div>
-              <Form.Item field="screenSources">
-                <Checkbox.Group className="!grid grid-cols-3 gap-4 relative [&_label]:!mr-0 [&_.arco-checkbox-text]:!ml-0">
-                  {screenAllSources.map((source) => (
-                    <Checkbox key={source.id} value={source.id}>
-                      {({ checked }) => {
-                        return (
-                          <div className="flex flex-col items-center gap-[4px]">
-                            <div
-                              className={clsx(
-                                'w-[94px] h-[60px] min-w-[94px] min-h-[60px] rounded-[8px] overflow-hidden border relative',
-                                checked ? 'border-black' : 'border-transparent'
-                              )}>
-                              <img
-                                src={source.thumbnail || ''}
-                                alt="thumbnail"
-                                className="w-[94px] h-[60px] inline-block object-cover"
-                              />
-                              <Checkbox checked={checked} className="!absolute !top-[4px] !right-[4px]" />
-                            </div>
-                            <div className="flex items-center space-x-[4px]">
-                              {source.appIcon ? (
-                                <img
-                                  src={source.appIcon || ''}
-                                  alt=""
-                                  className="w-[14px] h-[14px] inline-block object-cover"
-                                />
-                              ) : (
-                                <img src={screenIcon} alt="" className="w-[14px] h-[14px] inline-block object-cover" />
-                              )}
-                              <div className="text-[13px] leading-[22px] text-[#0b0b0f] !ml-[4px] line-clamp-1">
-                                {source.name}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      }}
-                    </Checkbox>
-                  ))}
-                </Checkbox.Group>
-              </Form.Item>
-            </div>
-            <div className="[&_.arco-checkbox]:!flex [&_.arco-checkbox]:!items-center">
-              <div className="text-[14px] leading-[20px] text-[#42464e] mb-[4px]">Window</div>
-              <div className="text-[10px] leading-[12px] text-[#737a87] mb-[4px]">
-                Only opened applications can be selected
-              </div>
-              <Form.Item field="windowSources">
-                <Checkbox.Group className="flex flex-col space-y-4">
-                  {appAllSources.map((source) => (
-                    <Checkbox key={source.id} value={source.id}>
-                      <div className="flex items-center space-x-[4px]">
-                        <img
-                          src={source.appIcon || source.thumbnail || ''}
-                          alt=""
-                          className="w-[14px] h-[14px] inline-block object-cover"
-                        />
-                        <div className="text-[13px] leading-[22px] text-[#0b0b0f] !ml-[4px] line-clamp-1">
-                          {source.name}
-                        </div>
-                      </div>
-                    </Checkbox>
-                  ))}
-                </Checkbox.Group>
-              </Form.Item>
-            </div>
           </div>
         </div>
       </Form>

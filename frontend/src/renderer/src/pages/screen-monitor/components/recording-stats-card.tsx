@@ -1,6 +1,7 @@
 import React from 'react'
-import { Tooltip, Image } from '@arco-design/web-react'
+import { Tooltip, Image, Button } from '@arco-design/web-react'
 import { pathToFileURL } from '@renderer/utils/file'
+import { CaptureSource } from '@interface/common/source'
 
 export interface RecordingStats {
   processed_screenshots: number
@@ -17,9 +18,11 @@ export interface RecordingStats {
 
 interface RecordingStatsCardProps {
   stats: RecordingStats | null
+  failedSources?: CaptureSource[]
+  onRetryFailed?: (sources?: CaptureSource[]) => void
 }
 
-const RecordingStatsCard: React.FC<RecordingStatsCardProps> = ({ stats }) => {
+const RecordingStatsCard: React.FC<RecordingStatsCardProps> = ({ stats, failedSources = [], onRetryFailed }) => {
   console.log('[RecordingStatsCard] Rendering with stats:', stats)
 
   if (!stats) {
@@ -77,9 +80,32 @@ const RecordingStatsCard: React.FC<RecordingStatsCardProps> = ({ stats }) => {
                 {stats.failed_screenshots} screenshot{stats.failed_screenshots > 1 ? 's' : ''} failed
               </span>
             </Tooltip>
+            {onRetryFailed && (
+              <>
+                <span className="mx-2">•</span>
+                <Button size="mini" type="secondary" status="warning" onClick={() => onRetryFailed()}>
+                  Retry all failed
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>
+
+      {failedSources.length > 0 && onRetryFailed && (
+        <div className="mt-2 space-x-2 flex flex-wrap items-center">
+          {failedSources.map((src, idx) => (
+            <Button
+              key={`${src.id || idx}`}
+              size="mini"
+              type="outline"
+              status="warning"
+              onClick={() => onRetryFailed([src])}>
+              Retry {src.name || `Source ${idx + 1}`}
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

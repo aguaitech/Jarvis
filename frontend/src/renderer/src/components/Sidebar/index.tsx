@@ -9,6 +9,7 @@ import logo from '/src/assets/icons/logo.svg'
 import homeIcon from '/src/assets/icons/home.svg'
 import screenMonitorIcon from '/src/assets/icons/screen-monitor.svg'
 import settings from '/src/assets/icons/settings.svg'
+import providers from '/src/assets/icons/settings.svg'
 
 // import resourcesIcon from '/src/assets/icons/resources.svg'
 // import { IconRobot } from '@arco-design/web-react/icon'
@@ -34,6 +35,12 @@ const tabItems = [
     icon: <img src={screenMonitorIcon} alt="screen-monitor" style={{ width: 15, height: 15 }} />,
     label: 'Screen Monitor',
     path: '/screen-monitor'
+  },
+  {
+    key: 'providers',
+    icon: <img src={providers} alt="providers" style={{ width: 15, height: 15 }} />,
+    label: 'Providers',
+    path: '/providers'
   },
   {
     key: 'settings',
